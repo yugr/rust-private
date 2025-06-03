@@ -163,9 +163,6 @@ fn to_selection<'tcx>(
         })
         .collect();
 
-    if let Ok(Certainty::Yes) = cand.result() {
-        nested.clear();
-    }
 
     Some(match cand.kind() {
         ProbeKind::TraitCandidate { source, result: _ } => match source {
