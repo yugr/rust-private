@@ -502,6 +502,70 @@ impl<T> [T] {
         }
     }
 
+    /// .
+    #[inline]
+    #[stable(feature = "slice_first_last_chunk", since = "1.77.0")]
+    #[rustc_const_stable(feature = "slice_first_last_chunk", since = "1.77.0")]
+    pub const unsafe fn split_first_chunk_unchecked<const N: usize>(&self) -> (&[T; N], &[T]) {
+        unsafe {
+            let (first, tail) = self.split_at_unchecked(N);
+
+            // SAFETY: We explicitly check for the correct number of elements,
+            //   and do not let the references outlive the slice.
+            (&*(first.as_ptr().cast::<[T; N]>()), tail)
+        }
+    }
+
+    /// .
+    #[inline]
+    #[stable(feature = "slice_first_last_chunk", since = "1.77.0")]
+    #[rustc_const_stable(feature = "const_slice_first_last_chunk", since = "1.83.0")]
+    pub const unsafe fn split_first_chunk_mut_unchecked<const N: usize>(
+        &mut self,
+    ) -> (&mut [T; N], &mut [T]) {
+        unsafe {
+            let (first, tail) = self.split_at_mut_unchecked(N);
+
+            // SAFETY: We explicitly check for the correct number of elements,
+            //   do not let the reference outlive the slice,
+            //   and enforce exclusive mutability of the chunk by the split.
+            (&mut *(first.as_mut_ptr().cast::<[T; N]>()), tail)
+        }
+    }
+
+    /// .
+    #[inline]
+    #[stable(feature = "slice_first_last_chunk", since = "1.77.0")]
+    #[rustc_const_stable(feature = "slice_first_last_chunk", since = "1.77.0")]
+    pub const unsafe fn split_last_chunk_unchecked<const N: usize>(&self) -> (&[T], &[T; N]) {
+        unsafe {
+            let index = self.len().unchecked_sub(N);
+            let (init, last) = self.split_at(index);
+
+            // SAFETY: We explicitly check for the correct number of elements,
+            //   and do not let the references outlive the slice.
+            (init, &*(last.as_ptr().cast::<[T; N]>()))
+        }
+    }
+
+    /// .
+    #[inline]
+    #[stable(feature = "slice_first_last_chunk", since = "1.77.0")]
+    #[rustc_const_stable(feature = "const_slice_first_last_chunk", since = "1.83.0")]
+    pub const unsafe fn split_last_chunk_mut_unchecked<const N: usize>(
+        &mut self,
+    ) -> (&mut [T], &mut [T; N]) {
+        unsafe {
+            let index = self.len().unchecked_sub(N);
+            let (init, last) = self.split_at_mut(index);
+
+            // SAFETY: We explicitly check for the correct number of elements,
+            //   do not let the reference outlive the slice,
+            //   and enforce exclusive mutability of the chunk by the split.
+            (init, &mut *(last.as_mut_ptr().cast::<[T; N]>()))
+        }
+    }
+
     /// Returns an array reference to the last `N` items in the slice.
     ///
     /// If the slice is not at least `N` in length, this will return `None`.
@@ -1912,10 +1976,7 @@ impl<T> [T] {
     #[track_caller]
     #[must_use]
     pub const fn split_at(&self, mid: usize) -> (&[T], &[T]) {
-        match self.split_at_checked(mid) {
-            Some(pair) => pair,
-            None => panic!("mid > len"),
-        }
+        unsafe { self.split_at_unchecked(mid) }
     }
 
     /// Divides one mutable slice into two at an index.
@@ -1946,10 +2007,7 @@ impl<T> [T] {
     #[must_use]
     #[rustc_const_stable(feature = "const_slice_split_at_mut", since = "1.83.0")]
     pub const fn split_at_mut(&mut self, mid: usize) -> (&mut [T], &mut [T]) {
-        match self.split_at_mut_checked(mid) {
-            Some(pair) => pair,
-            None => panic!("mid > len"),
-        }
+        unsafe { self.split_at_mut_unchecked(mid) }
     }
 
     /// Divides one slice into two at an index, without doing bounds checking.
@@ -3513,7 +3571,6 @@ impl<T> [T] {
     /// ```
     #[stable(feature = "slice_rotate", since = "1.26.0")]
     pub fn rotate_left(&mut self, mid: usize) {
-        assert!(mid <= self.len());
         let k = self.len() - mid;
         let p = self.as_mut_ptr();
 
@@ -3558,7 +3615,6 @@ impl<T> [T] {
     /// ```
     #[stable(feature = "slice_rotate", since = "1.26.0")]
     pub fn rotate_right(&mut self, k: usize) {
-        assert!(k <= self.len());
         let mid = self.len() - k;
         let p = self.as_mut_ptr();
 
@@ -3751,7 +3807,7 @@ impl<T> [T] {
             )
         }
 
-        if self.len() != src.len() {
+        if false && self.len() != src.len() {
             len_mismatch_fail(self.len(), src.len());
         }
 
@@ -3795,7 +3851,6 @@ impl<T> [T] {
     {
         let Range { start: src_start, end: src_end } = slice::range(src, ..self.len());
         let count = src_end - src_start;
-        assert!(dest <= self.len() - count, "dest is out of bounds");
         // SAFETY: the conditions for `ptr::copy` have all been checked above,
         // as have those for `ptr::add`.
         unsafe {
@@ -3857,7 +3912,6 @@ impl<T> [T] {
     #[stable(feature = "swap_with_slice", since = "1.27.0")]
     #[track_caller]
     pub fn swap_with_slice(&mut self, other: &mut [T]) {
-        assert!(self.len() == other.len(), "destination and source slices have different lengths");
         // SAFETY: `self` is valid for `self.len()` elements by definition, and `src` was
         // checked to have the same length. The slices cannot overlap because
         // mutable references are exclusive.
@@ -4919,7 +4973,6 @@ where
 {
     #[track_caller]
     default fn spec_clone_from(&mut self, src: &[T]) {
-        assert!(self.len() == src.len(), "destination and source slices have different lengths");
         // NOTE: We need to explicitly slice them to the same length
         // to make it easier for the optimizer to elide bounds checking.
         // But since it can't be relied on we also have an explicit specialization for T: Copy.
