@@ -10,7 +10,6 @@ use rustc_infer::traits::{
 use rustc_macros::extension;
 use rustc_middle::{bug, span_bug};
 use rustc_span::Span;
-use thin_vec::ThinVec;
 
 use crate::solve::inspect::{self, ProofTreeInferCtxtExt};
 
