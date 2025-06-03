@@ -50,7 +50,7 @@ pub struct InspectGoal<'a, 'tcx> {
 /// not something we want to leak to users. We therefore
 /// treat `NormalizesTo` goals as if they apply the expected
 /// type at the end of each candidate.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 struct NormalizesToTermHack<'tcx> {
     term: ty::Term<'tcx>,
     unconstrained_term: ty::Term<'tcx>,
@@ -195,6 +195,50 @@ impl<'a, 'tcx> InspectCandidate<'a, 'tcx> {
             .collect();
 
         (goals, opt_impl_args)
+    }
+
+    /// Instantiate the args of an impl if this candidate came from a
+    /// `CandidateSource::Impl`. This function modifies the state of the
+    /// `infcx`.
+    #[instrument(
+        level = "debug",
+        skip_all,
+        fields(goal = ?self.goal.goal, steps = ?self.steps)
+    )]
+    pub fn instantiate_opt_impl_args(&self, span: Span) -> Option<ty::GenericArgsRef<'tcx>> {
+        let infcx = self.goal.infcx;
+        let param_env = self.goal.goal.param_env;
+        let mut orig_values = self.goal.orig_values.to_vec();
+
+        let mut opt_impl_args = None;
+        for step in &self.steps {
+            match **step {
+                inspect::ProbeStep::RecordImplArgs { impl_args } => {
+                    opt_impl_args = Some(instantiate_canonical_state(
+                        infcx,
+                        span,
+                        param_env,
+                        &mut orig_values,
+                        impl_args,
+                    ));
+                }
+                inspect::ProbeStep::AddGoal(..) => {}
+                inspect::ProbeStep::MakeCanonicalResponse { .. }
+                | inspect::ProbeStep::NestedProbe(_) => unreachable!(),
+            }
+        }
+
+        let () =
+            instantiate_canonical_state(infcx, span, param_env, &mut orig_values, self.final_state);
+
+        if let Some(term_hack) = self.goal.normalizes_to_term_hack {
+            // FIXME: We ignore the expected term of `NormalizesTo` goals
+            // when computing the result of its candidates. This is
+            // scuffed.
+            let _ = term_hack.constrain(infcx, span, param_env);
+        }
+
+        opt_impl_args.map(|impl_args| eager_resolve_vars(infcx, impl_args))
     }
 
     pub fn instantiate_proof_tree_for_nested_goal(
