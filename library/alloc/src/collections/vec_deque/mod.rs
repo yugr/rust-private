@@ -722,6 +722,20 @@ impl<T, A: Allocator> VecDeque<T, A> {
         }
     }
 
+    /// .
+    #[stable(feature = "rust1", since = "1.0.0")]
+    pub unsafe fn get_unchecked(&self, index: usize) -> &T {
+        let idx = self.to_physical_idx(index);
+        unsafe { &*self.ptr().add(idx) }
+    }
+
+    /// .
+    #[stable(feature = "rust1", since = "1.0.0")]
+    pub unsafe fn get_mut_unchecked(&mut self, index: usize) -> &mut T {
+        let idx = self.to_physical_idx(index);
+        unsafe { &mut *self.ptr().add(idx) }
+    }
+
     /// Swaps elements at indices `i` and `j`.
     ///
     /// `i` and `j` may be equal.
@@ -747,8 +761,6 @@ impl<T, A: Allocator> VecDeque<T, A> {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn swap(&mut self, i: usize, j: usize) {
-        assert!(i < self.len());
-        assert!(j < self.len());
         let ri = self.to_physical_idx(i);
         let rj = self.to_physical_idx(j);
         unsafe { ptr::swap(self.ptr().add(ri), self.ptr().add(rj)) }
@@ -1939,7 +1951,6 @@ impl<T, A: Allocator> VecDeque<T, A> {
     #[stable(feature = "deque_extras_15", since = "1.5.0")]
     #[track_caller]
     pub fn insert(&mut self, index: usize, value: T) {
-        assert!(index <= self.len(), "index out of bounds");
         if self.is_full() {
             self.grow();
         }
@@ -2047,7 +2058,6 @@ impl<T, A: Allocator> VecDeque<T, A> {
         A: Clone,
     {
         let len = self.len;
-        assert!(at <= len, "`at` out of bounds");
 
         let other_len = len - at;
         let mut other = VecDeque::with_capacity_in(other_len, self.allocator().clone());
@@ -2497,7 +2507,6 @@ impl<T, A: Allocator> VecDeque<T, A> {
     /// ```
     #[stable(feature = "vecdeque_rotate", since = "1.36.0")]
     pub fn rotate_left(&mut self, n: usize) {
-        assert!(n <= self.len());
         let k = self.len - n;
         if n <= k {
             unsafe { self.rotate_left_inner(n) }
@@ -2540,7 +2549,6 @@ impl<T, A: Allocator> VecDeque<T, A> {
     /// ```
     #[stable(feature = "vecdeque_rotate", since = "1.36.0")]
     pub fn rotate_right(&mut self, n: usize) {
-        assert!(n <= self.len());
         let k = self.len - n;
         if n <= k {
             unsafe { self.rotate_right_inner(n) }
@@ -2923,7 +2931,7 @@ impl<T, A: Allocator> Index<usize> for VecDeque<T, A> {
 
     #[inline]
     fn index(&self, index: usize) -> &T {
-        self.get(index).expect("Out of bounds access")
+        unsafe { self.get_unchecked(index) }
     }
 }
 
@@ -2931,7 +2939,7 @@ impl<T, A: Allocator> Index<usize> for VecDeque<T, A> {
 impl<T, A: Allocator> IndexMut<usize> for VecDeque<T, A> {
     #[inline]
     fn index_mut(&mut self, index: usize) -> &mut T {
-        self.get_mut(index).expect("Out of bounds access")
+        unsafe { self.get_mut_unchecked(index) }
     }
 }
 

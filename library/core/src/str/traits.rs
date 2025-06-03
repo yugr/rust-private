@@ -235,17 +235,19 @@ unsafe impl SliceIndex<str> for ops::Range<usize> {
     #[inline]
     fn index(self, slice: &str) -> &Self::Output {
         let (start, end) = (self.start, self.end);
-        match self.get(slice) {
-            Some(s) => s,
-            None => super::slice_error_fail(slice, start, end),
+        if slice.is_char_boundary(start)
+            && slice.is_char_boundary(end)
+        {
+            unsafe { &*self.get_unchecked(slice) }
+        } else {
+            super::slice_error_fail(slice, start, end)
         }
     }
     #[inline]
     fn index_mut(self, slice: &mut str) -> &mut Self::Output {
         // is_char_boundary checks that the index is in [0, .len()]
         // cannot reuse `get` as above, because of NLL trouble
-        if self.start <= self.end
-            && slice.is_char_boundary(self.start)
+        if slice.is_char_boundary(self.start)
             && slice.is_char_boundary(self.end)
         {
             // SAFETY: just checked that `start` and `end` are on a char boundary,
@@ -337,17 +339,19 @@ unsafe impl SliceIndex<str> for range::Range<usize> {
     #[inline]
     fn index(self, slice: &str) -> &Self::Output {
         let (start, end) = (self.start, self.end);
-        match self.get(slice) {
-            Some(s) => s,
-            None => super::slice_error_fail(slice, start, end),
+        if slice.is_char_boundary(start)
+            && slice.is_char_boundary(end)
+        {
+            unsafe { &*self.get_unchecked(slice) }
+        } else {
+            super::slice_error_fail(slice, start, end)
         }
     }
     #[inline]
     fn index_mut(self, slice: &mut str) -> &mut Self::Output {
         // is_char_boundary checks that the index is in [0, .len()]
         // cannot reuse `get` as above, because of NLL trouble
-        if self.start <= self.end
-            && slice.is_char_boundary(self.start)
+        if slice.is_char_boundary(self.start)
             && slice.is_char_boundary(self.end)
         {
             // SAFETY: just checked that `start` and `end` are on a char boundary,
