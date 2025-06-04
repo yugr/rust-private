@@ -146,7 +146,10 @@ fn to_selection<'tcx>(
         return None;
     }
 
-    let (nested, impl_args) = cand.instantiate_nested_goals_and_opt_impl_args(span);
+    let (nested, impl_args) = match cand.result().expect("expected positive result") {
+        Certainty::Yes => (vec![], cand.instantiate_opt_impl_args(span)),
+        Certainty::Maybe(_) => cand.instantiate_nested_goals_and_opt_impl_args(span),
+    };
     let nested = nested
         .into_iter()
         .map(|nested| {
@@ -158,6 +161,7 @@ fn to_selection<'tcx>(
             )
         })
         .collect();
+
 
     Some(match cand.kind() {
         ProbeKind::TraitCandidate { source, result: _ } => match source {
