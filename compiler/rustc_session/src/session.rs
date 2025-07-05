@@ -797,7 +797,9 @@ impl Session {
 
     /// Returns the number of codegen units that should be used for this
     /// compilation
+    #[allow(unreachable_code)]
     pub fn codegen_units(&self) -> CodegenUnits {
+        return CodegenUnits::User(usize::from_str(env!("RUST_FORCED_CGU")).unwrap());
         if let Some(n) = self.opts.cli_forced_codegen_units {
             return CodegenUnits::User(n);
         }
