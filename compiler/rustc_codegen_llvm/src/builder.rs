@@ -393,19 +393,14 @@ impl<'a, 'll, 'tcx> BuilderMethods<'a, 'tcx> for Builder<'a, 'll, 'tcx> {
 
     math_builder_methods! {
         add(a, b) => LLVMBuildAdd,
-        fadd(a, b) => LLVMBuildFAdd,
         sub(a, b) => LLVMBuildSub,
-        fsub(a, b) => LLVMBuildFSub,
         mul(a, b) => LLVMBuildMul,
-        fmul(a, b) => LLVMBuildFMul,
         udiv(a, b) => LLVMBuildUDiv,
         exactudiv(a, b) => LLVMBuildExactUDiv,
         sdiv(a, b) => LLVMBuildSDiv,
         exactsdiv(a, b) => LLVMBuildExactSDiv,
-        fdiv(a, b) => LLVMBuildFDiv,
         urem(a, b) => LLVMBuildURem,
         srem(a, b) => LLVMBuildSRem,
-        frem(a, b) => LLVMBuildFRem,
         shl(a, b) => LLVMBuildShl,
         lshr(a, b) => LLVMBuildLShr,
         ashr(a, b) => LLVMBuildAShr,
@@ -413,7 +408,6 @@ impl<'a, 'll, 'tcx> BuilderMethods<'a, 'tcx> for Builder<'a, 'll, 'tcx> {
         or(a, b) => LLVMBuildOr,
         xor(a, b) => LLVMBuildXor,
         neg(x) => LLVMBuildNeg,
-        fneg(x) => LLVMBuildFNeg,
         not(x) => LLVMBuildNot,
         unchecked_sadd(x, y) => LLVMBuildNSWAdd,
         unchecked_uadd(x, y) => LLVMBuildNUWAdd,
@@ -421,6 +415,15 @@ impl<'a, 'll, 'tcx> BuilderMethods<'a, 'tcx> for Builder<'a, 'll, 'tcx> {
         unchecked_usub(x, y) => LLVMBuildNUWSub,
         unchecked_smul(x, y) => LLVMBuildNSWMul,
         unchecked_umul(x, y) => LLVMBuildNUWMul,
+    }
+
+    set_math_builder_methods! {
+        fadd(a, b) => (LLVMBuildFAdd, LLVMRustSetAlgebraicMath),
+        fsub(a, b) => (LLVMBuildFSub, LLVMRustSetAlgebraicMath),
+        fmul(a, b) => (LLVMBuildFMul, LLVMRustSetAlgebraicMath),
+        fdiv(a, b) => (LLVMBuildFDiv, LLVMRustSetAlgebraicMath),
+        frem(a, b) => (LLVMBuildFRem, LLVMRustSetAlgebraicMath),
+        fneg(x) => (LLVMBuildFNeg, LLVMRustSetAlgebraicMath),
     }
 
     fn unchecked_suadd(&mut self, a: &'ll Value, b: &'ll Value) -> &'ll Value {
