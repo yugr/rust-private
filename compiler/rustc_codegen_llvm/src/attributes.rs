@@ -1,5 +1,6 @@
 //! Set and unset common attributes on LLVM values.
 
+use rustc_abi::Align;
 use rustc_attr_parsing::{InlineAttr, InstructionSetAttr, OptimizeAttr};
 use rustc_codegen_ssa::traits::*;
 use rustc_hir::def_id::DefId;
@@ -480,7 +481,7 @@ pub(crate) fn llfn_attrs_from_instance<'ll, 'tcx>(
     // function alignment can be set globally with the `-Zmin-function-alignment=<n>` flag;
     // the alignment from a `#[repr(align(<n>))]` is used if it specifies a higher alignment.
     if let Some(align) =
-        Ord::max(cx.tcx.sess.opts.unstable_opts.min_function_alignment, codegen_fn_attrs.alignment)
+        Ord::max(Align::from_bytes(64).ok(), Ord::max(cx.tcx.sess.opts.unstable_opts.min_function_alignment, codegen_fn_attrs.alignment))
     {
         llvm::set_alignment(llfn, align);
     }
