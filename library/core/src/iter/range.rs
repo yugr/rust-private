@@ -1270,7 +1270,7 @@ impl<A: Step> Iterator for ops::RangeInclusive<A> {
 
         Step::steps_between(&self.start, &self.end)
             .1
-            .and_then(|steps| steps.checked_add(1))
+            .and_then(|steps| Some(steps + 1))
             .expect("count overflowed usize")
     }
 
