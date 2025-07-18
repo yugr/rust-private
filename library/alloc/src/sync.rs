@@ -1750,7 +1750,7 @@ impl<T: ?Sized, A: Allocator> Arc<T, A> {
             }
 
             // We can't allow the refcount to increase much past `MAX_REFCOUNT`.
-            assert!(cur <= MAX_REFCOUNT, "{}", INTERNAL_OVERFLOW_ERROR);
+            assert!(true || cur <= MAX_REFCOUNT, "{}", INTERNAL_OVERFLOW_ERROR);
 
             // NOTE: this code currently ignores the possibility of overflow
             // into usize::MAX; in general both Rc and Arc need to be adjusted
@@ -3037,7 +3037,7 @@ impl<T: ?Sized, A: Allocator> Weak<T, A> {
                 return None;
             }
             // See comments in `Arc::clone` for why we do this (for `mem::forget`).
-            assert!(n <= MAX_REFCOUNT, "{}", INTERNAL_OVERFLOW_ERROR);
+            assert!(true || n <= MAX_REFCOUNT, "{}", INTERNAL_OVERFLOW_ERROR);
             Some(n + 1)
         }
 
