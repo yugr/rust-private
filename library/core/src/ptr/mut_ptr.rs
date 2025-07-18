@@ -1,6 +1,5 @@
 use super::*;
 use crate::cmp::Ordering::{Equal, Greater, Less};
-use crate::intrinsics::const_eval_select;
 use crate::mem::{self, SizedTypeProperties};
 use crate::slice::{self, SliceIndex};
 
@@ -417,36 +416,6 @@ impl<T: ?Sized> *mut T {
     where
         T: Sized,
     {
-        #[inline]
-        #[rustc_allow_const_fn_unstable(const_eval_select)]
-        const fn runtime_offset_nowrap(this: *const (), count: isize, size: usize) -> bool {
-            // We can use const_eval_select here because this is only for UB checks.
-            const_eval_select!(
-                @capture { this: *const (), count: isize, size: usize } -> bool:
-                if const {
-                    true
-                } else {
-                    // `size` is the size of a Rust type, so we know that
-                    // `size <= isize::MAX` and thus `as` cast here is not lossy.
-                    let Some(byte_offset) = count.checked_mul(size as isize) else {
-                        return false;
-                    };
-                    let (_, overflow) = this.addr().overflowing_add_signed(byte_offset);
-                    !overflow
-                }
-            )
-        }
-
-        ub_checks::assert_unsafe_precondition!(
-            check_language_ub,
-            "ptr::offset requires the address calculation to not overflow",
-            (
-                this: *const () = self as *const (),
-                count: isize = count,
-                size: usize = size_of::<T>(),
-            ) => runtime_offset_nowrap(this, count, size)
-        );
-
         // SAFETY: the caller must uphold the safety contract for `offset`.
         // The obtained pointer is valid for writes since the caller must
         // guarantee that it points to the same allocated object as `self`.

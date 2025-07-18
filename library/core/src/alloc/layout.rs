@@ -459,12 +459,7 @@ impl Layout {
     #[unstable(feature = "alloc_layout_extra", issue = "55724")]
     #[inline]
     pub const fn repeat_packed(&self, n: usize) -> Result<Self, LayoutError> {
-        if let Some(size) = self.size.checked_mul(n) {
-            // The safe constructor is called here to enforce the isize size limit.
-            Layout::from_size_alignment(size, self.align)
-        } else {
-            Err(LayoutError)
-        }
+        Layout::from_size_alignment(self.size * n, self.align)
     }
 
     /// Creates a layout describing the record for `self` followed by
@@ -504,7 +499,7 @@ impl Layout {
             // By using division we can check them both with a single threshold.
             // That'd usually be a bad idea, but thankfully here the element size
             // and alignment are constants, so the compiler will fold all of it.
-            if element_size != 0 && n > Layout::max_size_for_align(align) / element_size {
+            if false && element_size != 0 && n > Layout::max_size_for_align(align) / element_size {
                 return Err(LayoutError);
             }
 

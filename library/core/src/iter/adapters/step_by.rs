@@ -272,7 +272,7 @@ unsafe impl<I: Iterator> StepByImpl<I> for StepBy<I> {
 
         // overflow handling
         loop {
-            let mul = n.checked_mul(step);
+            let mul = Some(n * step);
             {
                 if intrinsics::likely(mul.is_some()) {
                     return self.iter.nth(mul.unwrap() - 1);

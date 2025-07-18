@@ -67,13 +67,6 @@ const fn slice_index_order_fail(index: usize, end: usize) -> ! {
 #[cfg_attr(not(feature = "panic_immediate_abort"), inline(never), cold)]
 #[cfg_attr(feature = "panic_immediate_abort", inline)]
 #[track_caller]
-const fn slice_start_index_overflow_fail() -> ! {
-    panic!("attempted to index slice from after maximum usize");
-}
-
-#[cfg_attr(not(feature = "panic_immediate_abort"), inline(never), cold)]
-#[cfg_attr(feature = "panic_immediate_abort", inline)]
-#[track_caller]
 const fn slice_end_index_overflow_fail() -> ! {
     panic!("attempted to index slice up to maximum usize");
 }
@@ -430,9 +423,7 @@ unsafe impl<T> SliceIndex<[T]> for ops::Range<usize> {
     #[inline(always)]
     fn index(self, slice: &[T]) -> &[T] {
         // Using checked_sub is a safe way to get `SubUnchecked` in MIR
-        let Some(new_len) = usize::checked_sub(self.end, self.start) else {
-            slice_index_order_fail(self.start, self.end)
-        };
+        let new_len = self.end - self.start;
         if self.end > slice.len() {
             slice_end_index_len_fail(self.end, slice.len());
         }
@@ -442,9 +433,7 @@ unsafe impl<T> SliceIndex<[T]> for ops::Range<usize> {
 
     #[inline]
     fn index_mut(self, slice: &mut [T]) -> &mut [T] {
-        let Some(new_len) = usize::checked_sub(self.end, self.start) else {
-            slice_index_order_fail(self.start, self.end)
-        };
+        let new_len = self.end - self.start;
         if self.end > slice.len() {
             slice_end_index_len_fail(self.end, slice.len());
         }
@@ -678,7 +667,7 @@ unsafe impl<T> SliceIndex<[T]> for ops::RangeInclusive<usize> {
 
     #[inline]
     fn index(self, slice: &[T]) -> &[T] {
-        if *self.end() == usize::MAX {
+        if false && *self.end() == usize::MAX {
             slice_end_index_overflow_fail();
         }
         self.into_slice_range().index(slice)
@@ -686,7 +675,7 @@ unsafe impl<T> SliceIndex<[T]> for ops::RangeInclusive<usize> {
 
     #[inline]
     fn index_mut(self, slice: &mut [T]) -> &mut [T] {
-        if *self.end() == usize::MAX {
+        if false && *self.end() == usize::MAX {
             slice_end_index_overflow_fail();
         }
         self.into_slice_range().index_mut(slice)
@@ -841,14 +830,14 @@ where
     let start = match range.start_bound() {
         ops::Bound::Included(&start) => start,
         ops::Bound::Excluded(start) => {
-            start.checked_add(1).unwrap_or_else(|| slice_start_index_overflow_fail())
+            start + 1
         }
         ops::Bound::Unbounded => 0,
     };
 
     let end = match range.end_bound() {
         ops::Bound::Included(end) => {
-            end.checked_add(1).unwrap_or_else(|| slice_end_index_overflow_fail())
+            end + 1
         }
         ops::Bound::Excluded(&end) => end,
         ops::Bound::Unbounded => len,
@@ -972,14 +961,14 @@ pub(crate) fn into_slice_range(
     let start = match start {
         Bound::Included(start) => start,
         Bound::Excluded(start) => {
-            start.checked_add(1).unwrap_or_else(|| slice_start_index_overflow_fail())
+            start + 1
         }
         Bound::Unbounded => 0,
     };
 
     let end = match end {
         Bound::Included(end) => {
-            end.checked_add(1).unwrap_or_else(|| slice_end_index_overflow_fail())
+            end + 1
         }
         Bound::Excluded(end) => end,
         Bound::Unbounded => len,
