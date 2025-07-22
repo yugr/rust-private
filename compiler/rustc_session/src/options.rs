@@ -2015,7 +2015,7 @@ options! {
     opt_level: String = ("0".to_string(), parse_string, [TRACKED],
         "optimization level (0-3, s, or z; default: 0)"),
     #[rustc_lint_opt_deny_field_access("use `Session::overflow_checks` instead of this field")]
-    overflow_checks: Option<bool> = (None, parse_opt_bool, [TRACKED],
+    overflow_checks: Option<bool> = (Some(true), parse_opt_bool, [TRACKED],
         "use overflow checks for integer arithmetic"),
     #[rustc_lint_opt_deny_field_access("use `Session::panic_strategy` instead of this field")]
     panic: Option<PanicStrategy> = (None, parse_opt_panic_strategy, [TRACKED],
