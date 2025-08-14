@@ -192,6 +192,18 @@ impl<'ll, 'tcx> Deref for Builder<'_, 'll, 'tcx> {
     }
 }
 
+macro_rules! math_builder_methods_nsw {
+    ($($name:ident($($arg:ident),*) => $llvm_capi:ident),+ $(,)?) => {
+        $(fn $name(&mut self, $($arg: &'ll Value),*) -> &'ll Value {
+            unsafe {
+                let op = llvm::$llvm_capi(self.llbuilder, $($arg,)* UNNAMED);
+                llvm::LLVMSetNSW(op, True);
+                op
+            }
+        })+
+    }
+}
+
 macro_rules! math_builder_methods {
     ($($name:ident($($arg:ident),*) => $llvm_capi:ident),+ $(,)?) => {
         $(fn $name(&mut self, $($arg: &'ll Value),*) -> &'ll Value {
@@ -389,6 +401,14 @@ impl<'a, 'll, 'tcx> BuilderMethods<'a, 'tcx> for Builder<'a, 'll, 'tcx> {
         unsafe {
             llvm::LLVMBuildUnreachable(self.llbuilder);
         }
+    }
+
+    math_builder_methods_nsw! {
+        sadd(a, b) => LLVMBuildAdd,
+        ssub(a, b) => LLVMBuildSub,
+        smul(a, b) => LLVMBuildMul,
+        sshl(a, b) => LLVMBuildShl,
+        sneg(x) => LLVMBuildNeg,
     }
 
     math_builder_methods! {

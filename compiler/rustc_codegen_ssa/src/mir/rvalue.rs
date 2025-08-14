@@ -689,6 +689,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
             mir::Rvalue::UnaryOp(op, ref operand) => {
                 let operand = self.codegen_operand(bx, operand);
                 let is_float = operand.layout.ty.is_floating_point();
+                let is_signed = operand.layout.ty.is_signed();
                 let (val, layout) = match op {
                     mir::UnOp::Not => {
                         let llval = bx.not(operand.immediate());
@@ -697,6 +698,8 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
                     mir::UnOp::Neg => {
                         let llval = if is_float {
                             bx.fneg(operand.immediate())
+                        } else if is_signed {
+                            bx.sneg(operand.immediate())
                         } else {
                             bx.neg(operand.immediate())
                         };
@@ -904,6 +907,8 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
             mir::BinOp::Add => {
                 if is_float {
                     bx.fadd(lhs, rhs)
+                } else if is_signed {
+                    bx.sadd(lhs, rhs)
                 } else {
                     bx.add(lhs, rhs)
                 }
@@ -918,6 +923,8 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
             mir::BinOp::Sub => {
                 if is_float {
                     bx.fsub(lhs, rhs)
+                } else if is_signed {
+                    bx.ssub(lhs, rhs)
                 } else {
                     bx.sub(lhs, rhs)
                 }
@@ -932,6 +939,8 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
             mir::BinOp::Mul => {
                 if is_float {
                     bx.fmul(lhs, rhs)
+                } else if is_signed {
+                    bx.smul(lhs, rhs)
                 } else {
                     bx.mul(lhs, rhs)
                 }
@@ -984,7 +993,11 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
             }
             mir::BinOp::Shl | mir::BinOp::ShlUnchecked => {
                 let rhs = base::build_shift_expr_rhs(bx, lhs, rhs, op == mir::BinOp::ShlUnchecked);
-                bx.shl(lhs, rhs)
+                if is_signed {
+                    bx.sshl(lhs, rhs)
+                } else {
+                    bx.shl(lhs, rhs)
+                }
             }
             mir::BinOp::Shr | mir::BinOp::ShrUnchecked => {
                 let rhs = base::build_shift_expr_rhs(bx, lhs, rhs, op == mir::BinOp::ShrUnchecked);
