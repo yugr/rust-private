@@ -139,14 +139,17 @@ pub trait BuilderMethods<'a, 'tcx>:
     fn unreachable(&mut self);
 
     fn add(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
+    fn sadd(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     fn fadd(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     fn fadd_fast(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     fn fadd_algebraic(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     fn sub(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
+    fn ssub(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     fn fsub(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     fn fsub_fast(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     fn fsub_algebraic(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     fn mul(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
+    fn smul(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     fn fmul(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     fn fmul_fast(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     fn fmul_algebraic(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
@@ -165,6 +168,7 @@ pub trait BuilderMethods<'a, 'tcx>:
     /// Generate a left-shift. Both operands must have the same size. The right operand must be
     /// interpreted as unsigned and can be assumed to be less than the size of the left operand.
     fn shl(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
+    fn sshl(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     /// Generate a logical right-shift. Both operands must have the same size. The right operand
     /// must be interpreted as unsigned and can be assumed to be less than the size of the left
     /// operand.
@@ -211,6 +215,7 @@ pub trait BuilderMethods<'a, 'tcx>:
     }
     fn xor(&mut self, lhs: Self::Value, rhs: Self::Value) -> Self::Value;
     fn neg(&mut self, v: Self::Value) -> Self::Value;
+    fn sneg(&mut self, v: Self::Value) -> Self::Value;
     fn fneg(&mut self, v: Self::Value) -> Self::Value;
     fn not(&mut self, v: Self::Value) -> Self::Value;
 

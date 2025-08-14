@@ -2431,12 +2431,12 @@ fn generic_simd_intrinsic<'ll, 'tcx>(
         }
     }
     arith_binary! {
-        simd_add: Uint, Int => add, Float => fadd;
-        simd_sub: Uint, Int => sub, Float => fsub;
-        simd_mul: Uint, Int => mul, Float => fmul;
+        simd_add: Uint => add, Int => sadd, Float => fadd;
+        simd_sub: Uint => sub, Int => ssub, Float => fsub;
+        simd_mul: Uint => mul, Int => smul, Float => fmul;
         simd_div: Uint => udiv, Int => sdiv, Float => fdiv;
         simd_rem: Uint => urem, Int => srem, Float => frem;
-        simd_shl: Uint, Int => shl;
+        simd_shl: Uint => shl, Int => sshl;
         simd_shr: Uint => lshr, Int => ashr;
         simd_and: Uint, Int => and;
         simd_or: Uint, Int => or;
@@ -2461,7 +2461,7 @@ fn generic_simd_intrinsic<'ll, 'tcx>(
         }
     }
     arith_unary! {
-        simd_neg: Int => neg, Float => fneg;
+        simd_neg: Int => sneg, Float => fneg;
     }
 
     // Unary integer intrinsics
