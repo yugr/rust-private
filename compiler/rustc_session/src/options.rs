@@ -2018,7 +2018,7 @@ options! {
     overflow_checks: Option<bool> = (None, parse_opt_bool, [TRACKED],
         "use overflow checks for integer arithmetic"),
     #[rustc_lint_opt_deny_field_access("use `Session::panic_strategy` instead of this field")]
-    panic: Option<PanicStrategy> = (None, parse_opt_panic_strategy, [TRACKED],
+    panic: Option<PanicStrategy> = (Some(PanicStrategy::Abort), parse_opt_panic_strategy, [TRACKED],
         "panic strategy to compile crate with"),
     passes: Vec<String> = (Vec::new(), parse_list, [TRACKED],
         "a list of extra LLVM passes to run (space separated)"),
@@ -2363,7 +2363,7 @@ options! {
         "pass `-install_name @rpath/...` to the macOS linker (default: no)"),
     packed_bundled_libs: bool = (false, parse_bool, [TRACKED],
         "change rlib format to store native libraries as archives"),
-    panic_abort_tests: bool = (false, parse_bool, [TRACKED],
+    panic_abort_tests: bool = (true, parse_bool, [TRACKED],
         "support compiling tests with panic=abort (default: no)"),
     panic_in_drop: PanicStrategy = (PanicStrategy::Unwind, parse_panic_strategy, [TRACKED],
         "panic strategy for panics in drops"),
