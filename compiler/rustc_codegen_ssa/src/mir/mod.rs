@@ -89,6 +89,9 @@ pub struct FunctionCx<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> {
     /// Cached unreachable block
     unreachable_block: Option<Bx::BasicBlock>,
 
+    /// Cached trap block
+    trap_block: Option<Bx::BasicBlock>,
+
     /// Cached terminate upon unwinding block and its reason
     terminate_block: Option<(Bx::BasicBlock, UnwindTerminateReason)>,
 
@@ -213,6 +216,7 @@ pub fn codegen_mir<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>>(
         personality_slot: None,
         cached_llbbs,
         unreachable_block: None,
+        trap_block: None,
         terminate_block: None,
         cleanup_kinds,
         landing_pads: IndexVec::from_elem(None, &mir.basic_blocks),
