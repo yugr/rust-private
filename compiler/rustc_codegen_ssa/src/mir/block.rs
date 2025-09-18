@@ -4,10 +4,9 @@ use rustc_abi::{BackendRepr, ExternAbi, HasDataLayout, Reg, WrappingRange};
 use rustc_ast as ast;
 use rustc_ast::{InlineAsmOptions, InlineAsmTemplatePiece};
 use rustc_data_structures::packed::Pu128;
-use rustc_hir::lang_items::LangItem;
-use rustc_middle::mir::{self, AssertKind, InlineAsmMacro, SwitchTargets, UnwindTerminateReason};
+use rustc_middle::mir::{self, InlineAsmMacro, SwitchTargets, UnwindTerminateReason};
 use rustc_middle::ty::layout::{HasTyCtxt, LayoutOf, ValidityRequirement};
-use rustc_middle::ty::print::{with_no_trimmed_paths, with_no_visible_paths};
+use rustc_middle::ty::print::{with_no_trimmed_paths};
 use rustc_middle::ty::{self, Instance, Ty};
 use rustc_middle::{bug, span_bug};
 use rustc_session::config::OptLevel;
@@ -708,6 +707,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
         )
     }
 
+    #[allow(unused_variables)]
     fn codegen_assert_terminator(
         &mut self,
         helper: TerminatorCodegenHelper<'tcx>,
@@ -742,56 +742,17 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
 
         // Create the failure block and the conditional branch to it.
         let lltarget = helper.llbb_with_cleanup(self, target);
-        let panic_block = bx.append_sibling_block("panic");
+        let panic_block = self.trap_block();
         if expected {
             bx.cond_br(cond, lltarget, panic_block);
         } else {
             bx.cond_br(cond, panic_block, lltarget);
         }
 
-        // After this point, bx is the block for the call to panic.
-        bx.switch_to_block(panic_block);
-        self.set_debug_loc(bx, terminator.source_info);
-
-        // Get the location information.
-        let location = self.get_caller_location(bx, terminator.source_info).immediate();
-
-        // Put together the arguments to the panic entry point.
-        let (lang_item, args) = match msg {
-            AssertKind::BoundsCheck { len, index } => {
-                let len = self.codegen_operand(bx, len).immediate();
-                let index = self.codegen_operand(bx, index).immediate();
-                // It's `fn panic_bounds_check(index: usize, len: usize)`,
-                // and `#[track_caller]` adds an implicit third argument.
-                (LangItem::PanicBoundsCheck, vec![index, len, location])
-            }
-            AssertKind::MisalignedPointerDereference { required, found } => {
-                let required = self.codegen_operand(bx, required).immediate();
-                let found = self.codegen_operand(bx, found).immediate();
-                // It's `fn panic_misaligned_pointer_dereference(required: usize, found: usize)`,
-                // and `#[track_caller]` adds an implicit third argument.
-                (LangItem::PanicMisalignedPointerDereference, vec![required, found, location])
-            }
-            AssertKind::NullPointerDereference => {
-                // It's `fn panic_null_pointer_dereference()`,
-                // `#[track_caller]` adds an implicit argument.
-                (LangItem::PanicNullPointerDereference, vec![location])
-            }
-            _ => {
-                // It's `pub fn panic_...()` and `#[track_caller]` adds an implicit argument.
-                (msg.panic_function(), vec![location])
-            }
-        };
-
-        let (fn_abi, llfn, instance) = common::build_langcall(bx, Some(span), lang_item);
-
-        // Codegen the actual panic invoke/call.
-        let merging_succ =
-            helper.do_call(self, bx, fn_abi, llfn, &args, None, unwind, &[], Some(instance), false);
-        assert_eq!(merging_succ, MergingSucc::False);
         MergingSucc::False
     }
 
+    #[allow(unused_variables)]
     fn codegen_terminate_terminator(
         &mut self,
         helper: TerminatorCodegenHelper<'tcx>,
@@ -799,29 +760,12 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
         terminator: &mir::Terminator<'tcx>,
         reason: UnwindTerminateReason,
     ) {
-        let span = terminator.source_info.span;
-        self.set_debug_loc(bx, terminator.source_info);
-
-        // Obtain the panic entry point.
-        let (fn_abi, llfn, instance) = common::build_langcall(bx, Some(span), reason.lang_item());
-
-        // Codegen the actual panic invoke/call.
-        let merging_succ = helper.do_call(
-            self,
-            bx,
-            fn_abi,
-            llfn,
-            &[],
-            None,
-            mir::UnwindAction::Unreachable,
-            &[],
-            Some(instance),
-            false,
-        );
-        assert_eq!(merging_succ, MergingSucc::False);
+        bx.abort();
+        bx.unreachable();
     }
 
     /// Returns `Some` if this is indeed a panic intrinsic and codegen is done.
+    #[allow(unused_variables)]
     fn codegen_panic_intrinsic(
         &mut self,
         helper: &TerminatorCodegenHelper<'tcx>,
@@ -847,39 +791,9 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
             let layout = bx.layout_of(ty);
 
             Some(if do_panic {
-                let msg_str = with_no_visible_paths!({
-                    with_no_trimmed_paths!({
-                        if layout.is_uninhabited() {
-                            // Use this error even for the other intrinsics as it is more precise.
-                            format!("attempted to instantiate uninhabited type `{ty}`")
-                        } else if requirement == ValidityRequirement::Zero {
-                            format!("attempted to zero-initialize type `{ty}`, which is invalid")
-                        } else {
-                            format!(
-                                "attempted to leave type `{ty}` uninitialized, which is invalid"
-                            )
-                        }
-                    })
-                });
-                let msg = bx.const_str(&msg_str);
-
-                // Obtain the panic entry point.
-                let (fn_abi, llfn, instance) =
-                    common::build_langcall(bx, Some(source_info.span), LangItem::PanicNounwind);
-
-                // Codegen the actual panic invoke/call.
-                helper.do_call(
-                    self,
-                    bx,
-                    fn_abi,
-                    llfn,
-                    &[msg.0, msg.1],
-                    target.as_ref().map(|bb| (ReturnDest::Nothing, *bb)),
-                    unwind,
-                    &[],
-                    Some(instance),
-                    mergeable_succ,
-                )
+                bx.abort();
+                bx.unreachable();
+                MergingSucc::False
             } else {
                 // a NOP
                 let target = target.unwrap();
@@ -1710,6 +1624,17 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
             let mut bx = Bx::build(self.cx, llbb);
             bx.unreachable();
             self.unreachable_block = Some(llbb);
+            llbb
+        })
+    }
+
+    fn trap_block(&mut self) -> Bx::BasicBlock {
+        self.trap_block.unwrap_or_else(|| {
+            let llbb = Bx::append_block(self.cx, self.llfn, "trap");
+            let mut bx = Bx::build(self.cx, llbb);
+            bx.abort();
+            bx.unreachable();
+            self.trap_block = Some(llbb);
             llbb
         })
     }
