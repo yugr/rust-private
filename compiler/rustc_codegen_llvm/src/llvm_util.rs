@@ -142,6 +142,9 @@ unsafe fn configure_llvm(sess: &Session) {
             }
             _ => (),
         };
+
+        add("-enable-split-machine-functions", true);
+        add("-mfs-split-ehcode", true);
     }
 
     if sess.opts.unstable_opts.llvm_time_trace {
