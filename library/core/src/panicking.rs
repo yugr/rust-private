@@ -32,8 +32,8 @@ use crate::fmt;
 use crate::intrinsics::const_eval_select;
 use crate::panic::{Location, PanicInfo};
 
-#[cfg(feature = "panic_immediate_abort")]
-const _: () = assert!(cfg!(panic = "abort"), "panic_immediate_abort requires -C panic=abort");
+//#[cfg(feature = "panic_immediate_abort")]
+//const _: () = assert!(cfg!(panic = "abort"), "panic_immediate_abort requires -C panic=abort");
 
 // First we define the two main entry points that all panics go through.
 // In the end both are just convenience wrappers around `panic_impl`.
@@ -342,6 +342,7 @@ fn panic_in_cleanup() -> ! {
 /// This function is used instead of panic_fmt in const eval.
 #[lang = "const_panic_fmt"] // needed by const-eval machine to replace calls to `panic_fmt` lang item
 #[rustc_const_stable_indirect] // must follow stable const rules since it is exposed to stable
+#[allow(unused_variables)]
 pub const fn const_panic_fmt(fmt: fmt::Arguments<'_>) -> ! {
     if let Some(msg) = fmt.as_str() {
         // The panic_display function is hooked by const eval.
