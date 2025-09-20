@@ -142,6 +142,9 @@ unsafe fn configure_llvm(sess: &Session) {
             }
             _ => (),
         };
+
+        add("-hot-cold-split", true);
+        add("-enable-cold-section", true);
     }
 
     if sess.opts.unstable_opts.llvm_time_trace {
