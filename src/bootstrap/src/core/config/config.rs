@@ -2389,7 +2389,7 @@ impl Config {
             );
         }
 
-        let default_std_features = BTreeSet::from([String::from("panic-unwind")]);
+        let default_std_features = BTreeSet::from([String::from("panic_immediate_abort")]);
         config.rust_std_features = std_features.unwrap_or(default_std_features);
 
         let default = debug == Some(true);

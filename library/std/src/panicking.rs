@@ -8,6 +8,9 @@
 //! * Shims around "try"
 
 #![deny(unsafe_op_in_unsafe_fn)]
+#![allow(unused_unsafe)]
+#![allow(unused_imports)]
+#![allow(unused_variables)]
 
 use core::panic::{Location, PanicPayload};
 
