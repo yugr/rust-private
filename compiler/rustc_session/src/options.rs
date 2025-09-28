@@ -2372,7 +2372,7 @@ options! {
         (default: no)"),
     patchable_function_entry: PatchableFunctionEntry = (PatchableFunctionEntry::default(), parse_patchable_function_entry, [TRACKED],
         "nop padding at function entry"),
-    plt: Option<bool> = (None, parse_opt_bool, [TRACKED],
+    plt: Option<bool> = (Some(true), parse_opt_bool, [TRACKED],
         "whether to use the PLT when calling into shared libraries;
         only has effect for PIC code on systems with ELF binaries
         (default: PLT is disabled if full relro is enabled on x86_64)"),
