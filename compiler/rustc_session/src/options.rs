@@ -2420,7 +2420,7 @@ options! {
         in registers EAX, EDX, and ECX instead of on the stack for\
         \"C\", \"cdecl\", and \"stdcall\" fn.\
         It is UNSOUND to link together crates that use different values for this flag!"),
-    relax_elf_relocations: Option<bool> = (None, parse_opt_bool, [TRACKED],
+    relax_elf_relocations: Option<bool> = (Some(true), parse_opt_bool, [TRACKED],
         "whether ELF relocations can be relaxed"),
     remap_cwd_prefix: Option<PathBuf> = (None, parse_opt_pathbuf, [TRACKED],
         "remap paths under the current working directory to this path prefix"),
