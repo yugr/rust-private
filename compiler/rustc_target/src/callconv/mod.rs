@@ -3,7 +3,7 @@ use std::{fmt, iter};
 
 use rustc_abi::{
     AddressSpace, Align, BackendRepr, ExternAbi, HasDataLayout, Primitive, Reg, RegKind, Scalar,
-    Size, TyAbiInterface, TyAndLayout,
+    Size, TyAbiInterface, TyAndLayout, Variants,
 };
 use rustc_macros::HashStable_Generic;
 
@@ -409,6 +409,18 @@ impl<'a, Ty> ArgAbi<'a, Ty> {
                 // already indirect
             }
             _ => panic!("Tried to make {:?} indirect", self.mode),
+        }
+    }
+
+    /// Pass this argument as register pair
+    #[track_caller]
+    pub fn make_pair(&mut self) {
+        match self.mode {
+            PassMode::Indirect { attrs: _, meta_attrs: _, on_stack: _ } => {
+                self.mode = PassMode::Pair(ArgAttributes::new(), ArgAttributes::new());
+                //self.layout
+            }
+            _ => panic!("Tried to make {:?} a pair", self.mode),
         }
     }
 
@@ -828,6 +840,30 @@ impl<'a, Ty> FnAbi<'a, Ty> {
                         // an LLVM aggregate type for this leads to bad optimizations,
                         // so we pick an appropriately sized integer type instead.
                         arg.cast_to(Reg { kind: RegKind::Integer, size });
+                    }
+                    if let Variants::Multiple { variants, .. } = &arg.layout.variants {
+                        if variants.raw.iter().all(|x| x.is_sized() && x.size <= Primitive::Pointer(AddressSpace::DATA).size(cx) * 2) {
+                        //if let [var1, var2] = &variants.raw[..]
+                        //    && var1.is_sized()
+                        //    && var2.is_sized()
+                        //    && var1.size <= Primitive::Pointer(AddressSpace::DATA).size(cx) * 2
+                        //    && var2.size <= Primitive::Pointer(AddressSpace::DATA).size(cx) * 2
+                        //{
+                        //    eprintln!(
+                        //        "tag: {:?}, var1: {:?}, var2: {:?}",
+                        //        tag.size(cx),
+                        //        var1.size,
+                        //        var2.size
+                        //    );
+                            //arg.cast_to(CastTarget::pair(
+                            //    Reg { kind: RegKind::Integer, size: var1.size },
+                            //    Reg { kind: RegKind::Integer, size: var2.size },
+                            //));
+                            arg.cast_to(Reg {
+                                kind: RegKind::Integer,
+                                size: Primitive::Pointer(AddressSpace::DATA).size(cx) * 2,
+                            });
+                        }
                     }
                 }
 
