@@ -156,15 +156,10 @@ pub(crate) const fn maybe_is_nonoverlapping(
         } else {
             let src_usize = src.addr();
             let dst_usize = dst.addr();
-            let Some(size) = size.checked_mul(count) else {
-                crate::panicking::panic_nounwind(
-                    "is_nonoverlapping: `size_of::<T>() * count` overflows a usize",
-                )
-            };
             let diff = src_usize.abs_diff(dst_usize);
             // If the absolute distance between the ptrs is at least as big as the size of the buffer,
             // they do not overlap.
-            diff >= size
+            diff >= size * count
         }
     )
 }

@@ -2949,7 +2949,8 @@ impl<T, I: iter::TrustedLen<Item = T>> ToRcSlice<T> for I {
     fn to_rc_slice(self) -> Rc<[T]> {
         // This is the case for a `TrustedLen` iterator.
         let (low, high) = self.size_hint();
-        if let Some(high) = high {
+        let high = unsafe { high.unwrap_unchecked() };
+        {
             debug_assert_eq!(
                 low,
                 high,
@@ -2961,12 +2962,6 @@ impl<T, I: iter::TrustedLen<Item = T>> ToRcSlice<T> for I {
                 // SAFETY: We need to ensure that the iterator has an exact length and we have.
                 Rc::from_iter_exact(self, low)
             }
-        } else {
-            // TrustedLen contract guarantees that `upper_bound == None` implies an iterator
-            // length exceeding `usize::MAX`.
-            // The default implementation would collect into a vec which would panic.
-            // Thus we panic here immediately without invoking `Vec` code.
-            panic!("capacity overflow");
         }
     }
 }

@@ -652,7 +652,7 @@ impl<A: Allocator> RawVecInner<A> {
         }
 
         // Nothing we can really do about these checks, sadly.
-        let required_cap = len.checked_add(additional).ok_or(CapacityOverflow)?;
+        let required_cap = len + additional;
 
         // This guarantees exponential growth. The doubling cannot overflow
         // because `cap <= isize::MAX` and the type of `cap` is `usize`.
@@ -680,7 +680,7 @@ impl<A: Allocator> RawVecInner<A> {
             return Err(CapacityOverflow.into());
         }
 
-        let cap = len.checked_add(additional).ok_or(CapacityOverflow)?;
+        let cap = len + additional;
         let new_layout = layout_array(cap, elem_layout)?;
 
         let ptr = finish_grow(new_layout, self.current_memory(elem_layout), &mut self.alloc)?;
@@ -808,12 +808,8 @@ fn handle_error(e: TryReserveError) -> ! {
 // an extra guard for this in case we're running on a platform which can use
 // all 4GB in user-space, e.g., PAE or x32.
 #[inline]
-fn alloc_guard(alloc_size: usize) -> Result<(), TryReserveError> {
-    if usize::BITS < 64 && alloc_size > isize::MAX as usize {
-        Err(CapacityOverflow.into())
-    } else {
-        Ok(())
-    }
+fn alloc_guard(_: usize) -> Result<(), TryReserveError> {
+    Ok(())
 }
 
 #[inline]
