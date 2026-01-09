@@ -146,12 +146,8 @@ where
     // if the `len` calculation overflows, we'll panic
     // we would have run out of memory anyway and the rest of the function requires
     // the entire Vec pre-allocated for safety
-    let reserved_len = sep_len
-        .checked_mul(iter.len())
-        .and_then(|n| {
-            slice.iter().map(|s| s.borrow().as_ref().len()).try_fold(n, usize::checked_add)
-        })
-        .expect("attempt to join into collection with len > usize::MAX");
+    let n = sep_len * iter.len();
+    let reserved_len = slice.iter().map(|s| s.borrow().as_ref().len()).fold(n, usize::wrapping_add);
 
     // prepare an uninitialized buffer
     let mut result = Vec::with_capacity(reserved_len);
