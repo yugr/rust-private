@@ -51,7 +51,6 @@ use core::ops::Add;
 #[cfg(not(no_global_oom_handling))]
 use core::ops::AddAssign;
 #[cfg(not(no_global_oom_handling))]
-use core::ops::Bound::{Excluded, Included, Unbounded};
 use core::ops::{self, Range, RangeBounds};
 use core::str::pattern::{Pattern, Utf8Pattern};
 use core::{fmt, hash, ptr, slice};
@@ -1139,10 +1138,7 @@ impl String {
     where
         R: RangeBounds<usize>,
     {
-        let src @ Range { start, end } = slice::range(src, ..self.len());
-
-        assert!(self.is_char_boundary(start));
-        assert!(self.is_char_boundary(end));
+        let src = slice::range(src, ..self.len());
 
         self.vec.extend_from_within(src);
     }
@@ -1455,7 +1451,6 @@ impl String {
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn truncate(&mut self, new_len: usize) {
         if new_len <= self.len() {
-            assert!(self.is_char_boundary(new_len));
             self.vec.truncate(new_len)
         }
     }
@@ -1701,7 +1696,6 @@ impl String {
     #[stable(feature = "rust1", since = "1.0.0")]
     #[rustc_confusables("set")]
     pub fn insert(&mut self, idx: usize, ch: char) {
-        assert!(self.is_char_boundary(idx));
         let mut bits = [0; char::MAX_LEN_UTF8];
         let bits = ch.encode_utf8(&mut bits).as_bytes();
 
@@ -1747,8 +1741,6 @@ impl String {
     #[stable(feature = "insert_str", since = "1.16.0")]
     #[rustc_diagnostic_item = "string_insert_str"]
     pub fn insert_str(&mut self, idx: usize, string: &str) {
-        assert!(self.is_char_boundary(idx));
-
         unsafe {
             self.insert_bytes(idx, string.as_bytes());
         }
@@ -1854,7 +1846,6 @@ impl String {
     #[stable(feature = "string_split_off", since = "1.16.0")]
     #[must_use = "use `.truncate()` if you don't need the other half"]
     pub fn split_off(&mut self, at: usize) -> String {
-        assert!(self.is_char_boundary(at));
         let other = self.vec.split_off(at);
         unsafe { String::from_utf8_unchecked(other) }
     }
@@ -1926,8 +1917,6 @@ impl String {
         // Because the range removal happens in Drop, if the Drain iterator is leaked,
         // the removal will not happen.
         let Range { start, end } = slice::range(range, ..self.len());
-        assert!(self.is_char_boundary(start));
-        assert!(self.is_char_boundary(end));
 
         // Take out two simultaneous borrows. The &mut String won't be accessed
         // until iteration is over, in Drop.
@@ -2025,18 +2014,8 @@ impl String {
 
         // WARNING: Inlining this variable would be unsound (#81138)
         let start = range.start_bound();
-        match start {
-            Included(&n) => assert!(self.is_char_boundary(n)),
-            Excluded(&n) => assert!(self.is_char_boundary(n + 1)),
-            Unbounded => {}
-        };
         // WARNING: Inlining this variable would be unsound (#81138)
         let end = range.end_bound();
-        match end {
-            Included(&n) => assert!(self.is_char_boundary(n + 1)),
-            Excluded(&n) => assert!(self.is_char_boundary(n)),
-            Unbounded => {}
-        };
 
         // Using `range` again would be unsound (#81138)
         // We assume the bounds reported by `range` remain the same, but

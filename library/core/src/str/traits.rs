@@ -161,8 +161,6 @@ unsafe impl SliceIndex<str> for ops::Range<usize> {
     #[inline]
     fn get(self, slice: &str) -> Option<&Self::Output> {
         if self.start <= self.end
-            && slice.is_char_boundary(self.start)
-            && slice.is_char_boundary(self.end)
         {
             // SAFETY: just checked that `start` and `end` are on a char boundary,
             // and we are passing in a safe reference, so the return value will also be one.
@@ -175,8 +173,6 @@ unsafe impl SliceIndex<str> for ops::Range<usize> {
     #[inline]
     fn get_mut(self, slice: &mut str) -> Option<&mut Self::Output> {
         if self.start <= self.end
-            && slice.is_char_boundary(self.start)
-            && slice.is_char_boundary(self.end)
         {
             // SAFETY: just checked that `start` and `end` are on a char boundary.
             // We know the pointer is unique because we got it from `slice`.
@@ -242,11 +238,7 @@ unsafe impl SliceIndex<str> for ops::Range<usize> {
     }
     #[inline]
     fn index_mut(self, slice: &mut str) -> &mut Self::Output {
-        // is_char_boundary checks that the index is in [0, .len()]
-        // cannot reuse `get` as above, because of NLL trouble
         if self.start <= self.end
-            && slice.is_char_boundary(self.start)
-            && slice.is_char_boundary(self.end)
         {
             // SAFETY: just checked that `start` and `end` are on a char boundary,
             // and we are passing in a safe reference, so the return value will also be one.
@@ -263,8 +255,6 @@ unsafe impl SliceIndex<str> for range::Range<usize> {
     #[inline]
     fn get(self, slice: &str) -> Option<&Self::Output> {
         if self.start <= self.end
-            && slice.is_char_boundary(self.start)
-            && slice.is_char_boundary(self.end)
         {
             // SAFETY: just checked that `start` and `end` are on a char boundary,
             // and we are passing in a safe reference, so the return value will also be one.
@@ -277,8 +267,6 @@ unsafe impl SliceIndex<str> for range::Range<usize> {
     #[inline]
     fn get_mut(self, slice: &mut str) -> Option<&mut Self::Output> {
         if self.start <= self.end
-            && slice.is_char_boundary(self.start)
-            && slice.is_char_boundary(self.end)
         {
             // SAFETY: just checked that `start` and `end` are on a char boundary.
             // We know the pointer is unique because we got it from `slice`.
@@ -347,8 +335,6 @@ unsafe impl SliceIndex<str> for range::Range<usize> {
         // is_char_boundary checks that the index is in [0, .len()]
         // cannot reuse `get` as above, because of NLL trouble
         if self.start <= self.end
-            && slice.is_char_boundary(self.start)
-            && slice.is_char_boundary(self.end)
         {
             // SAFETY: just checked that `start` and `end` are on a char boundary,
             // and we are passing in a safe reference, so the return value will also be one.
@@ -461,21 +447,11 @@ unsafe impl SliceIndex<str> for ops::RangeTo<usize> {
     }
     #[inline]
     fn index(self, slice: &str) -> &Self::Output {
-        let end = self.end;
-        match self.get(slice) {
-            Some(s) => s,
-            None => super::slice_error_fail(slice, 0, end),
-        }
+        unsafe { &*self.get_unchecked(slice) }
     }
     #[inline]
     fn index_mut(self, slice: &mut str) -> &mut Self::Output {
-        if slice.is_char_boundary(self.end) {
-            // SAFETY: just checked that `end` is on a char boundary,
-            // and we are passing in a safe reference, so the return value will also be one.
-            unsafe { &mut *self.get_unchecked_mut(slice) }
-        } else {
-            super::slice_error_fail(slice, 0, self.end)
-        }
+        unsafe { &mut *self.get_unchecked_mut(slice) }
     }
 }
 
@@ -531,21 +507,11 @@ unsafe impl SliceIndex<str> for ops::RangeFrom<usize> {
     }
     #[inline]
     fn index(self, slice: &str) -> &Self::Output {
-        let (start, end) = (self.start, slice.len());
-        match self.get(slice) {
-            Some(s) => s,
-            None => super::slice_error_fail(slice, start, end),
-        }
+        unsafe { &*self.get_unchecked(slice) }
     }
     #[inline]
     fn index_mut(self, slice: &mut str) -> &mut Self::Output {
-        if slice.is_char_boundary(self.start) {
-            // SAFETY: just checked that `start` is on a char boundary,
-            // and we are passing in a safe reference, so the return value will also be one.
-            unsafe { &mut *self.get_unchecked_mut(slice) }
-        } else {
-            super::slice_error_fail(slice, self.start, slice.len())
-        }
+        unsafe { &mut *self.get_unchecked_mut(slice) }
     }
 }
 
@@ -586,21 +552,11 @@ unsafe impl SliceIndex<str> for range::RangeFrom<usize> {
     }
     #[inline]
     fn index(self, slice: &str) -> &Self::Output {
-        let (start, end) = (self.start, slice.len());
-        match self.get(slice) {
-            Some(s) => s,
-            None => super::slice_error_fail(slice, start, end),
-        }
+        unsafe { &*self.get_unchecked(slice) }
     }
     #[inline]
     fn index_mut(self, slice: &mut str) -> &mut Self::Output {
-        if slice.is_char_boundary(self.start) {
-            // SAFETY: just checked that `start` is on a char boundary,
-            // and we are passing in a safe reference, so the return value will also be one.
-            unsafe { &mut *self.get_unchecked_mut(slice) }
-        } else {
-            super::slice_error_fail(slice, self.start, slice.len())
-        }
+        unsafe { &mut *self.get_unchecked_mut(slice) }
     }
 }
 

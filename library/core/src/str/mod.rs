@@ -812,10 +812,7 @@ impl str {
     #[stable(feature = "str_split_at", since = "1.4.0")]
     #[rustc_const_stable(feature = "const_str_split_at", since = "1.86.0")]
     pub const fn split_at(&self, mid: usize) -> (&str, &str) {
-        match self.split_at_checked(mid) {
-            None => slice_error_fail(self, 0, mid),
-            Some(pair) => pair,
-        }
+        unsafe { self.split_at_unchecked(mid) }
     }
 
     /// Divides one mutable string slice into two at an index.
@@ -854,12 +851,7 @@ impl str {
     #[rustc_const_stable(feature = "const_str_split_at", since = "1.86.0")]
     pub const fn split_at_mut(&mut self, mid: usize) -> (&mut str, &mut str) {
         // is_char_boundary checks that the index is in [0, .len()]
-        if self.is_char_boundary(mid) {
-            // SAFETY: just checked that `mid` is on a char boundary.
-            unsafe { self.split_at_mut_unchecked(mid) }
-        } else {
-            slice_error_fail(self, 0, mid)
-        }
+        unsafe { self.split_at_mut_unchecked(mid) }
     }
 
     /// Divides one string slice into two at an index.
@@ -893,13 +885,7 @@ impl str {
     #[stable(feature = "split_at_checked", since = "1.80.0")]
     #[rustc_const_stable(feature = "const_str_split_at", since = "1.86.0")]
     pub const fn split_at_checked(&self, mid: usize) -> Option<(&str, &str)> {
-        // is_char_boundary checks that the index is in [0, .len()]
-        if self.is_char_boundary(mid) {
-            // SAFETY: just checked that `mid` is on a char boundary.
-            Some(unsafe { self.split_at_unchecked(mid) })
-        } else {
-            None
-        }
+        Some(unsafe { self.split_at_unchecked(mid) })
     }
 
     /// Divides one mutable string slice into two at an index.
@@ -934,13 +920,8 @@ impl str {
     #[stable(feature = "split_at_checked", since = "1.80.0")]
     #[rustc_const_stable(feature = "const_str_split_at", since = "1.86.0")]
     pub const fn split_at_mut_checked(&mut self, mid: usize) -> Option<(&mut str, &mut str)> {
-        // is_char_boundary checks that the index is in [0, .len()]
-        if self.is_char_boundary(mid) {
-            // SAFETY: just checked that `mid` is on a char boundary.
-            Some(unsafe { self.split_at_mut_unchecked(mid) })
-        } else {
-            None
-        }
+        // SAFETY: just checked that `mid` is on a char boundary.
+        Some(unsafe { self.split_at_mut_unchecked(mid) })
     }
 
     /// Divides one string slice into two at an index.
