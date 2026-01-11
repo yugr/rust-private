@@ -412,18 +412,6 @@ impl<'a, Ty> ArgAbi<'a, Ty> {
         }
     }
 
-    /// Pass this argument as register pair
-    #[track_caller]
-    pub fn make_pair(&mut self) {
-        match self.mode {
-            PassMode::Indirect { attrs: _, meta_attrs: _, on_stack: _ } => {
-                self.mode = PassMode::Pair(ArgAttributes::new(), ArgAttributes::new());
-                //self.layout
-            }
-            _ => panic!("Tried to make {:?} a pair", self.mode),
-        }
-    }
-
     /// Same as `make_indirect`, but for arguments that are ignored. Only needed for ABIs that pass
     /// ZSTs indirectly.
     #[track_caller]
@@ -842,28 +830,32 @@ impl<'a, Ty> FnAbi<'a, Ty> {
                         arg.cast_to(Reg { kind: RegKind::Integer, size });
                     }
                     if let Variants::Multiple { variants, .. } = &arg.layout.variants {
-                        if variants.raw.iter().all(|x| x.is_sized() && x.size <= Primitive::Pointer(AddressSpace::DATA).size(cx) * 2) {
-                        //if let [var1, var2] = &variants.raw[..]
-                        //    && var1.is_sized()
-                        //    && var2.is_sized()
-                        //    && var1.size <= Primitive::Pointer(AddressSpace::DATA).size(cx) * 2
-                        //    && var2.size <= Primitive::Pointer(AddressSpace::DATA).size(cx) * 2
-                        //{
-                        //    eprintln!(
-                        //        "tag: {:?}, var1: {:?}, var2: {:?}",
-                        //        tag.size(cx),
-                        //        var1.size,
-                        //        var2.size
-                        //    );
-                            //arg.cast_to(CastTarget::pair(
-                            //    Reg { kind: RegKind::Integer, size: var1.size },
-                            //    Reg { kind: RegKind::Integer, size: var2.size },
-                            //));
-                            arg.cast_to(Reg {
-                                kind: RegKind::Integer,
-                                size: Primitive::Pointer(AddressSpace::DATA).size(cx) * 2,
-                            });
-                        }
+                        //for reg_num in 2..4 {
+                            let reg_num = 2;
+                            if variants.raw.iter().all(|x| {
+                                x.is_sized()
+                                    && x.size
+                                        <= Primitive::Pointer(AddressSpace::DATA).size(cx) * reg_num
+                            }) {
+                                arg.mode = PassMode::Cast {
+                                    cast: Box::new(CastTarget::from(Uniform {
+                                        unit: Reg {
+                                            kind: RegKind::Integer,
+                                            size: Primitive::Pointer(AddressSpace::DATA).size(cx),
+                                        },
+                                        total: Primitive::Pointer(AddressSpace::DATA).size(cx) * reg_num,
+                                        is_consecutive: true,
+                                    })),
+                                    pad_i32: false,
+                                };
+                                //arg.cast_to(Reg {
+                                //    kind: RegKind::Integer,
+                                //    size: Primitive::Pointer(AddressSpace::DATA).size(cx) * reg_num,
+                                //});
+                                //eprintln!("Optimizing enum into {reg_num} regs");
+                                //break;
+                            }
+                        //}
                     }
                 }
 
