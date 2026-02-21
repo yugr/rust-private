@@ -2,6 +2,7 @@ cfg_if::cfg_if! {
     // Tier 1
     if #[cfg(any(target_os = "linux", target_os = "android"))] {
         mod linux;
+        #[allow(unused_imports)]
         pub use linux::{fill_bytes, hashmap_random_keys};
     } else if #[cfg(target_os = "windows")] {
         mod windows;
@@ -92,6 +93,7 @@ cfg_if::cfg_if! {
     all(target_family = "wasm", target_os = "unknown"),
     target_os = "xous",
 )))]
+#[allow(dead_code)]
 pub fn hashmap_random_keys() -> (u64, u64) {
     let mut buf = [0; 16];
     fill_bytes(&mut buf);

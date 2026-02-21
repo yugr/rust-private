@@ -161,6 +161,7 @@ pub fn fill_bytes(bytes: &mut [u8]) {
     getrandom(bytes, false);
 }
 
+#[allow(dead_code)]
 pub fn hashmap_random_keys() -> (u64, u64) {
     let mut bytes = [0; 16];
     getrandom(&mut bytes, true);
