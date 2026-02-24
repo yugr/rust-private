@@ -198,7 +198,8 @@ impl ReprOptions {
     /// Returns `true` if this `#[repr()]` guarantees a fixed field order,
     /// e.g. `repr(C)` or `repr(<int>)`.
     pub fn inhibit_struct_field_reordering(&self) -> bool {
-        self.flags.intersects(ReprFlags::FIELD_ORDER_UNOPTIMIZABLE) || self.int.is_some()
+        //self.flags.intersects(ReprFlags::FIELD_ORDER_UNOPTIMIZABLE) || self.int.is_some()
+        true
     }
 
     /// Returns `true` if this type is valid for reordering and `-Z randomize-layout`
