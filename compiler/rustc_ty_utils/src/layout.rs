@@ -19,6 +19,7 @@ use rustc_middle::ty::{
 };
 use rustc_session::{DataTypeKind, FieldInfo, FieldKind, SizeKind, VariantInfo};
 use rustc_span::{Symbol, sym};
+use std::env;
 use tracing::{debug, instrument};
 use {rustc_abi as abi, rustc_hir as hir};
 
@@ -524,11 +525,34 @@ fn layout_of_uncached<'tcx>(
                     .flatten()
             };
 
-            let dont_niche_optimize_enum = def.repr().inhibit_enum_layout_opt()
-                || def
-                    .variants()
-                    .iter_enumerated()
-                    .any(|(i, v)| v.discr != ty::VariantDiscr::Relative(i.as_u32()));
+            if env::var("RUST_PRINT").is_ok() {
+                eprintln!("type is {:?}", ty);
+                eprintln!("def is {:?}", def);
+            }
+
+            //let tyt = Ty::new_bound;
+            let niche_optimize_enum = if format!("{:?}", def).contains("Option") && args.len() == 1 {
+                let arg_ty = args.type_at(0);
+                if env::var("RUST_PRINT").is_ok() {
+                    eprintln!("arg_ty: {:?}", arg_ty);
+                }
+                match arg_ty.kind() {
+                    ty::Ref(_, _, _) => true,
+                    ty::Adt(def, _) => {
+                        arg_ty.is_box() || format!("{:?}", def).contains("NonNull") || format!("{:?}", def).contains("NonZero")
+                    }
+                    _ => false,
+                }
+            } else {
+                false
+            };
+
+            let dont_niche_optimize_enum = !niche_optimize_enum;
+            //let dont_niche_optimize_enum = def.repr().inhibit_enum_layout_opt()
+            //    || def
+            //        .variants()
+            //        .iter_enumerated()
+            //        .any(|(i, v)| v.discr != ty::VariantDiscr::Relative(i.as_u32()));
 
             let maybe_unsized = def.is_struct()
                 && def.non_enum_variant().tail_opt().is_some_and(|last_field| {

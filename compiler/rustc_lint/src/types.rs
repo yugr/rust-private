@@ -1012,7 +1012,7 @@ pub(crate) fn repr_nullable_ptr<'tcx>(
             // being applied (and we've got a problem somewhere).
             let compute_size_skeleton = |t| SizeSkeleton::compute(t, tcx, typing_env).ok();
             if !compute_size_skeleton(ty)?.same_size(compute_size_skeleton(field_ty)?) {
-                bug!("improper_ctypes: Option nonnull optimization not applied?");
+                bug!("improper_ctypes: Option nonnull optimization not applied? For type {:?}", ty);
             }
 
             // Return the nullable type this Option-like enum can be safely represented with.
