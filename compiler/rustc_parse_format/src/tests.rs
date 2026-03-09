@@ -1,13 +1,13 @@
-use Piece::*;
-
 use super::*;
 
 #[track_caller]
+#[allow(dead_code)]
 fn same(fmt: &'static str, p: &[Piece<'static>]) {
     let parser = Parser::new(fmt, None, None, false, ParseMode::Format);
     assert_eq!(parser.collect::<Vec<Piece<'static>>>(), p);
 }
 
+#[allow(dead_code)]
 fn fmtdflt() -> FormatSpec<'static> {
     return FormatSpec {
         fill: None,
@@ -26,6 +26,7 @@ fn fmtdflt() -> FormatSpec<'static> {
     };
 }
 
+#[allow(dead_code)]
 fn musterr(s: &str) {
     let mut p = Parser::new(s, None, None, false, ParseMode::Format);
     p.next();

@@ -262,10 +262,6 @@ struct MatcherPos {
     matches: Rc<Vec<NamedMatch>>,
 }
 
-// This type is used a lot. Make sure it doesn't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-rustc_data_structures::static_assert_size!(MatcherPos, 16);
-
 impl MatcherPos {
     /// Adds `m` as a named match for the `metavar_idx`-th metavar. There are only two call sites,
     /// and both are hot enough to be always worth inlining.

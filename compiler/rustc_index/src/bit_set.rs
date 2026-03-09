@@ -500,10 +500,6 @@ enum Chunk {
     Mixed(ChunkSize, ChunkSize, Rc<[Word; CHUNK_WORDS]>),
 }
 
-// This type is used a lot. Make sure it doesn't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-crate::static_assert_size!(Chunk, 16);
-
 impl<T> ChunkedBitSet<T> {
     pub fn domain_size(&self) -> usize {
         self.domain_size

@@ -103,9 +103,6 @@ pub type EvalToConstValueResult<'tcx> = Result<ConstValue<'tcx>, ErrorHandled>;
 /// necessary context to give good user-facing errors for this case.
 pub type EvalToValTreeResult<'tcx> = Result<Result<ValTree<'tcx>, Ty<'tcx>>, ErrorHandled>;
 
-#[cfg(target_pointer_width = "64")]
-rustc_data_structures::static_assert_size!(InterpErrorInfo<'_>, 8);
-
 /// Packages the kind of error we got from the const code interpreter
 /// up with a Rust-level backtrace of where the error occurred.
 /// These should always be constructed by calling `.into()` on

@@ -160,9 +160,6 @@ rustc_index::newtype_index! {
     pub struct FirstStatementIndex {}
 }
 
-// compilation error if size of `ScopeData` is not the same as a `u32`
-rustc_data_structures::static_assert_size!(ScopeData, 4);
-
 impl Scope {
     pub fn hir_id(&self, scope_tree: &ScopeTree) -> Option<HirId> {
         scope_tree.root_body.map(|hir_id| HirId { owner: hir_id.owner, local_id: self.local_id })

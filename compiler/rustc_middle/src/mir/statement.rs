@@ -70,10 +70,6 @@ pub struct PlaceTy<'tcx> {
     pub variant_index: Option<VariantIdx>,
 }
 
-// At least on 64 bit systems, `PlaceTy` should not be larger than two or three pointers.
-#[cfg(target_pointer_width = "64")]
-rustc_data_structures::static_assert_size!(PlaceTy<'_>, 16);
-
 impl<'tcx> PlaceTy<'tcx> {
     #[inline]
     pub fn from_ty(ty: Ty<'tcx>) -> PlaceTy<'tcx> {

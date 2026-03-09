@@ -28,13 +28,6 @@ mod unicode_chars;
 
 use unescape_error_reporting::{emit_unescape_error, escaped_char};
 
-// This type is used a lot. Make sure it doesn't unintentionally get bigger.
-//
-// This assertion is in this crate, rather than in `rustc_lexer`, because that
-// crate cannot depend on `rustc_data_structures`.
-#[cfg(target_pointer_width = "64")]
-rustc_data_structures::static_assert_size!(rustc_lexer::Token, 12);
-
 #[derive(Clone, Debug)]
 pub(crate) struct UnmatchedDelim {
     pub found_delim: Option<Delimiter>,

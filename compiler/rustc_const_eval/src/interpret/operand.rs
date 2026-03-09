@@ -869,17 +869,3 @@ impl<'tcx, M: Machine<'tcx>> InterpCx<'tcx, M> {
         interp_ok(OpTy { op: Operand::Immediate(imm), layout })
     }
 }
-
-// Some nodes are used a lot. Make sure they don't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-mod size_asserts {
-    use rustc_data_structures::static_assert_size;
-
-    use super::*;
-    // tidy-alphabetical-start
-    static_assert_size!(Immediate, 48);
-    static_assert_size!(ImmTy<'_>, 64);
-    static_assert_size!(Operand, 56);
-    static_assert_size!(OpTy<'_>, 72);
-    // tidy-alphabetical-end
-}

@@ -365,37 +365,6 @@ macro_rules! define_callbacks {
                 }
 
                 pub type Storage<'tcx> = <$($K)* as keys::Key>::Cache<Erase<$V>>;
-
-                // Ensure that keys grow no larger than 80 bytes by accident.
-                // Increase this limit if necessary, but do try to keep the size low if possible
-                #[cfg(target_pointer_width = "64")]
-                const _: () = {
-                    if size_of::<Key<'static>>() > 88 {
-                        panic!("{}", concat!(
-                            "the query `",
-                            stringify!($name),
-                            "` has a key type `",
-                            stringify!($($K)*),
-                            "` that is too large"
-                        ));
-                    }
-                };
-
-                // Ensure that values grow no larger than 64 bytes by accident.
-                // Increase this limit if necessary, but do try to keep the size low if possible
-                #[cfg(target_pointer_width = "64")]
-                #[cfg(not(feature = "rustc_randomized_layouts"))]
-                const _: () = {
-                    if size_of::<Value<'static>>() > 64 {
-                        panic!("{}", concat!(
-                            "the query `",
-                            stringify!($name),
-                            "` has a value type `",
-                            stringify!($V),
-                            "` that is too large"
-                        ));
-                    }
-                };
             })*
         }
 

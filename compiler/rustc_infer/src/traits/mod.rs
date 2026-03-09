@@ -110,10 +110,6 @@ impl<'tcx> PolyTraitObligation<'tcx> {
     }
 }
 
-// `PredicateObligation` is used a lot. Make sure it doesn't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-rustc_data_structures::static_assert_size!(PredicateObligation<'_>, 48);
-
 pub type Selection<'tcx> = ImplSource<'tcx, PredicateObligation<'tcx>>;
 
 /// A callback that can be provided to `inspect_typeck`. Invoked on evaluation

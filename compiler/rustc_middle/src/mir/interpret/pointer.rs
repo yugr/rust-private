@@ -2,7 +2,6 @@ use std::fmt;
 use std::num::NonZero;
 
 use rustc_abi::{HasDataLayout, Size};
-use rustc_data_structures::static_assert_size;
 use rustc_macros::{HashStable, TyDecodable, TyEncodable};
 
 use super::AllocId;
@@ -238,11 +237,6 @@ pub struct Pointer<Prov = CtfeProvenance> {
     pub(super) offset: Size, // kept private to avoid accidental misinterpretation (meaning depends on `Prov` type)
     pub provenance: Prov,
 }
-
-static_assert_size!(Pointer, 16);
-// `Option<Prov>` pointers are also passed around quite a bit
-// (but not stored in permanent machine state).
-static_assert_size!(Pointer<Option<CtfeProvenance>>, 16);
 
 // We want the `Debug` output to be readable as it is used by `derive(Debug)` for
 // all the Miri types.

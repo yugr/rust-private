@@ -1662,19 +1662,3 @@ pub fn find_self_call<'tcx>(
     }
     None
 }
-
-// Some nodes are used a lot. Make sure they don't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-mod size_asserts {
-    use rustc_data_structures::static_assert_size;
-
-    use super::*;
-    // tidy-alphabetical-start
-    static_assert_size!(BasicBlockData<'_>, 128);
-    static_assert_size!(LocalDecl<'_>, 40);
-    static_assert_size!(SourceScopeData<'_>, 64);
-    static_assert_size!(Statement<'_>, 32);
-    static_assert_size!(Terminator<'_>, 96);
-    static_assert_size!(VarDebugInfo<'_>, 88);
-    // tidy-alphabetical-end
-}

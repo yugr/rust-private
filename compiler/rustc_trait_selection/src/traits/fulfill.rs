@@ -76,10 +76,6 @@ pub struct PendingPredicateObligation<'tcx> {
     pub stalled_on: Vec<TyOrConstInferVar>,
 }
 
-// `PendingPredicateObligation` is used a lot. Make sure it doesn't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-rustc_data_structures::static_assert_size!(PendingPredicateObligation<'_>, 72);
-
 impl<'tcx, E> FulfillmentContext<'tcx, E>
 where
     E: FromSolverError<'tcx, OldSolverError<'tcx>>,

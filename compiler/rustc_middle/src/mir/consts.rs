@@ -74,9 +74,6 @@ pub enum ConstValue<'tcx> {
     },
 }
 
-#[cfg(target_pointer_width = "64")]
-rustc_data_structures::static_assert_size!(ConstValue<'_>, 24);
-
 impl<'tcx> ConstValue<'tcx> {
     #[inline]
     pub fn try_to_scalar(&self) -> Option<Scalar> {

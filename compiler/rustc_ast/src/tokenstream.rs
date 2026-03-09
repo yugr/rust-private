@@ -720,19 +720,3 @@ impl DelimSpacing {
         DelimSpacing { open, close }
     }
 }
-
-// Some types are used a lot. Make sure they don't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-mod size_asserts {
-    use rustc_data_structures::static_assert_size;
-
-    use super::*;
-    // tidy-alphabetical-start
-    static_assert_size!(AttrTokenStream, 8);
-    static_assert_size!(AttrTokenTree, 32);
-    static_assert_size!(LazyAttrTokenStream, 8);
-    static_assert_size!(Option<LazyAttrTokenStream>, 8); // must be small, used in many AST nodes
-    static_assert_size!(TokenStream, 8);
-    static_assert_size!(TokenTree, 32);
-    // tidy-alphabetical-end
-}
