@@ -602,7 +602,7 @@ fn layout_of_uncached<'tcx>(
                 eprintln!("def is {:?}", def);
             }
 
-            let niche_optimize_enum = if format!("{:?}", def).contains("Option") && args.len() == 1 {
+            let niche_optimize_enum = if format!("{:?}", def).ends_with("option::Option") && args.len() == 1 {
                 let arg_ty = args.type_at(0);
                 if env::var("RUST_PRINT").is_ok() {
                     eprintln!("arg_ty: {:?}", arg_ty);
