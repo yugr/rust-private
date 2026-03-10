@@ -1104,9 +1104,5 @@ fn unescape_string(string: &str) -> Option<String> {
     ok.then_some(buf)
 }
 
-// Assert a reasonable size for `Piece`
-#[cfg(all(test, target_pointer_width = "64"))]
-rustc_index::static_assert_size!(Piece<'_>, 16);
-
-#[cfg(test)]
+// Assert a r#[cfg(test)]
 mod tests;

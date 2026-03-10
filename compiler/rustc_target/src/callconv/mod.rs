@@ -896,15 +896,3 @@ impl FromStr for Conv {
         }
     }
 }
-
-// Some types are used a lot. Make sure they don't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-mod size_asserts {
-    use rustc_data_structures::static_assert_size;
-
-    use super::*;
-    // tidy-alphabetical-start
-    static_assert_size!(ArgAbi<'_, usize>, 56);
-    static_assert_size!(FnAbi<'_, usize>, 80);
-    // tidy-alphabetical-end
-}

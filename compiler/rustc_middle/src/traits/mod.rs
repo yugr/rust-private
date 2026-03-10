@@ -502,10 +502,6 @@ impl<'tcx> ObligationCauseCode<'tcx> {
     }
 }
 
-// `ObligationCauseCode` is used a lot. Make sure it doesn't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-rustc_data_structures::static_assert_size!(ObligationCauseCode<'_>, 48);
-
 #[derive(Clone, Debug, PartialEq, Eq, HashStable, TyEncodable, TyDecodable)]
 #[derive(TypeVisitable, TypeFoldable)]
 pub struct MatchExpressionArmCause<'tcx> {

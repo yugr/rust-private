@@ -4,6 +4,7 @@
 //!
 //! This API is completely unstable and subject to change.
 
+#![feature(try_blocks)]
 // tidy-alphabetical-start
 #![allow(internal_features)]
 #![cfg_attr(doc, recursion_limit = "256")] // FIXME(nnethercote): will be removed by #124141

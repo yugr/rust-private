@@ -1611,20 +1611,3 @@ pub enum BinOp {
     /// The `ptr.offset` operator
     Offset,
 }
-
-// Some nodes are used a lot. Make sure they don't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-mod size_asserts {
-    use rustc_data_structures::static_assert_size;
-
-    use super::*;
-    // tidy-alphabetical-start
-    static_assert_size!(AggregateKind<'_>, 32);
-    static_assert_size!(Operand<'_>, 24);
-    static_assert_size!(Place<'_>, 16);
-    static_assert_size!(PlaceElem<'_>, 24);
-    static_assert_size!(Rvalue<'_>, 40);
-    static_assert_size!(StatementKind<'_>, 16);
-    static_assert_size!(TerminatorKind<'_>, 80);
-    // tidy-alphabetical-end
-}

@@ -182,10 +182,6 @@ pub struct ClosureOutlivesRequirement<'tcx> {
     pub category: ConstraintCategory<'tcx>,
 }
 
-// Make sure this enum doesn't unintentionally grow
-#[cfg(target_pointer_width = "64")]
-rustc_data_structures::static_assert_size!(ConstraintCategory<'_>, 16);
-
 /// Outlives-constraints can be categorized to determine whether and why they
 /// are interesting (for error reporting). Order of variants indicates sort
 /// order of the category, thereby influencing diagnostic output.

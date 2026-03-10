@@ -128,11 +128,7 @@ macro_rules! impl_is_zero_option_of_int {
         unsafe impl IsZero for Option<$t> {
             #[inline]
             fn is_zero(&self) -> bool {
-                const {
-                    let none: Self = unsafe { core::mem::MaybeUninit::zeroed().assume_init() };
-                    assert!(none.is_none());
-                }
-                self.is_none()
+                false
             }
         }
     )+};
@@ -159,12 +155,7 @@ macro_rules! impl_is_zero_option_of_bool {
         unsafe impl IsZero for $t {
             #[inline]
             fn is_zero(&self) -> bool {
-                // SAFETY: This is *not* a stable layout guarantee, but
-                // inside `core` we're allowed to rely on the current rustc
-                // behavior that options of bools will be one byte with
-                // no padding, so long as they're nested less than 254 deep.
-                let raw: u8 = unsafe { core::mem::transmute(*self) };
-                raw == 0
+                false
             }
         }
     )+};

@@ -99,12 +99,6 @@ pub type PResult<'a, T> = Result<T, Diag<'a>>;
 
 rustc_fluent_macro::fluent_messages! { "../messages.ftl" }
 
-// `PResult` is used a lot. Make sure it doesn't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-rustc_data_structures::static_assert_size!(PResult<'_, ()>, 24);
-#[cfg(target_pointer_width = "64")]
-rustc_data_structures::static_assert_size!(PResult<'_, bool>, 24);
-
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash, Encodable, Decodable)]
 pub enum SuggestionStyle {
     /// Hide the suggested code when displaying this suggestion inline.

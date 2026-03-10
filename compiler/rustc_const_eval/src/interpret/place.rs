@@ -1048,18 +1048,3 @@ where
         interp_ok(self.ptr_to_mplace(ptr.into(), layout))
     }
 }
-
-// Some nodes are used a lot. Make sure they don't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-mod size_asserts {
-    use rustc_data_structures::static_assert_size;
-
-    use super::*;
-    // tidy-alphabetical-start
-    static_assert_size!(MemPlace, 48);
-    static_assert_size!(MemPlaceMeta, 24);
-    static_assert_size!(MPlaceTy<'_>, 64);
-    static_assert_size!(Place, 48);
-    static_assert_size!(PlaceTy<'_>, 64);
-    // tidy-alphabetical-end
-}

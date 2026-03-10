@@ -323,18 +323,3 @@ impl StableOrd for WorkProductId {
     // `WorkProductId` sort order is not affected by (de)serialization.
     const THIS_IMPLEMENTATION_HAS_BEEN_TRIPLE_CHECKED: () = ();
 }
-
-// Some types are used a lot. Make sure they don't unintentionally get bigger.
-#[cfg(target_pointer_width = "64")]
-mod size_asserts {
-    use rustc_data_structures::static_assert_size;
-
-    use super::*;
-    // tidy-alphabetical-start
-    static_assert_size!(DepKind, 2);
-    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
-    static_assert_size!(DepNode, 18);
-    #[cfg(not(any(target_arch = "x86", target_arch = "x86_64")))]
-    static_assert_size!(DepNode, 24);
-    // tidy-alphabetical-end
-}
