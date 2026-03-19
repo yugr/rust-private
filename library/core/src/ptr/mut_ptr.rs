@@ -1,3 +1,5 @@
+#![allow(unused_imports)]
+
 use super::*;
 use crate::cmp::Ordering::{Equal, Greater, Less};
 use crate::intrinsics::const_eval_select;
