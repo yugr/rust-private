@@ -197,7 +197,9 @@ macro_rules! math_builder_methods_nsw {
         $(fn $name(&mut self, $($arg: &'ll Value),*) -> &'ll Value {
             unsafe {
                 let op = llvm::$llvm_capi(self.llbuilder, $($arg,)* UNNAMED);
-                llvm::LLVMSetNSW(op, True);
+                if llvm::LLVMIsAInstruction(op).is_some() {
+                    llvm::LLVMSetNSW(op, True);
+                }
                 op
             }
         })+
