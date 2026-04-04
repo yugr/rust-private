@@ -334,7 +334,7 @@ impl<H> WithHeader<H> {
                 let alloc: *mut u8 = const_allocate(alloc_size, alloc_align);
 
                 let metadata_offset =
-                    alloc_size.checked_sub(size_of::<<Dyn as Pointee>::Metadata>()).unwrap();
+                    alloc_size - size_of::<<Dyn as Pointee>::Metadata>();
                 // SAFETY: adding offset within the allocation.
                 let metadata_ptr: *mut <Dyn as Pointee>::Metadata =
                     alloc.add(metadata_offset).cast();

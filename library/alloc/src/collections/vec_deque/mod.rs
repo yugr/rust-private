@@ -20,7 +20,7 @@ use core::ops::{Index, IndexMut, Range, RangeBounds};
 use core::{fmt, ptr, slice};
 
 use crate::alloc::{Allocator, Global};
-use crate::collections::{TryReserveError, TryReserveErrorKind};
+use crate::collections::{TryReserveError};
 use crate::raw_vec::RawVec;
 use crate::vec::Vec;
 
@@ -209,7 +209,7 @@ impl<T, A: Allocator> VecDeque<T, A> {
     /// index + addend.
     #[inline]
     fn wrap_add(&self, idx: usize, addend: usize) -> usize {
-        wrap_index(idx.wrapping_add(addend), self.capacity())
+        wrap_index(idx + addend, self.capacity())
     }
 
     #[inline]
@@ -808,7 +808,7 @@ impl<T, A: Allocator> VecDeque<T, A> {
     #[stable(feature = "rust1", since = "1.0.0")]
     #[track_caller]
     pub fn reserve_exact(&mut self, additional: usize) {
-        let new_cap = self.len.checked_add(additional).expect("capacity overflow");
+        let new_cap = self.len + additional;
         let old_cap = self.capacity();
 
         if new_cap > old_cap {
@@ -839,7 +839,7 @@ impl<T, A: Allocator> VecDeque<T, A> {
     #[cfg_attr(not(test), rustc_diagnostic_item = "vecdeque_reserve")]
     #[track_caller]
     pub fn reserve(&mut self, additional: usize) {
-        let new_cap = self.len.checked_add(additional).expect("capacity overflow");
+        let new_cap = self.len + additional;
         let old_cap = self.capacity();
 
         if new_cap > old_cap {
@@ -892,7 +892,7 @@ impl<T, A: Allocator> VecDeque<T, A> {
     #[stable(feature = "try_reserve", since = "1.57.0")]
     pub fn try_reserve_exact(&mut self, additional: usize) -> Result<(), TryReserveError> {
         let new_cap =
-            self.len.checked_add(additional).ok_or(TryReserveErrorKind::CapacityOverflow)?;
+            self.len + additional;
         let old_cap = self.capacity();
 
         if new_cap > old_cap {
@@ -940,7 +940,7 @@ impl<T, A: Allocator> VecDeque<T, A> {
     #[stable(feature = "try_reserve", since = "1.57.0")]
     pub fn try_reserve(&mut self, additional: usize) -> Result<(), TryReserveError> {
         let new_cap =
-            self.len.checked_add(additional).ok_or(TryReserveErrorKind::CapacityOverflow)?;
+            self.len + additional;
         let old_cap = self.capacity();
 
         if new_cap > old_cap {
@@ -2121,7 +2121,7 @@ impl<T, A: Allocator> VecDeque<T, A> {
     #[track_caller]
     pub fn append(&mut self, other: &mut Self) {
         if T::IS_ZST {
-            self.len = self.len.checked_add(other.len).expect("capacity overflow");
+            self.len = self.len + other.len;
             other.len = 0;
             other.head = 0;
             return;

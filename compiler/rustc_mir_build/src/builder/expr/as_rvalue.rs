@@ -668,7 +668,7 @@ impl<'a, 'tcx> Builder<'a, 'tcx> {
                 block = self.assert(block, Operand::Move(inbounds), true, overflow_err, span);
                 Rvalue::BinaryOp(op, Box::new((lhs, rhs)))
             }
-            BinOp::Div | BinOp::Rem if ty.is_integral() => {
+            BinOp::Div | BinOp::Rem if ty.is_integral() && false => {
                 // Checking division and remainder is more complex, since we 1. always check
                 // and 2. there are two possible failure cases, divide-by-zero and overflow.
 

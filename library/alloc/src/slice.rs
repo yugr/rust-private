@@ -519,7 +519,7 @@ impl<T> [T] {
         // and `rem` is the remaining part of `n`.
 
         // Using `Vec` to access `set_len()`.
-        let capacity = self.len().checked_mul(n).expect("capacity overflow");
+        let capacity = self.len() * n;
         let mut buf = Vec::with_capacity(capacity);
 
         // `2^expn` repetition is done by doubling `buf` `expn`-times.

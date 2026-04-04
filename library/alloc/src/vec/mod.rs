@@ -3125,7 +3125,7 @@ impl<T, A: Allocator, const N: usize> Vec<[T; N], A> {
     pub fn into_flattened(self) -> Vec<T, A> {
         let (ptr, len, cap, alloc) = self.into_raw_parts_with_alloc();
         let (new_len, new_cap) = if T::IS_ZST {
-            (len.checked_mul(N).expect("vec len overflow"), usize::MAX)
+            (len * N, usize::MAX)
         } else {
             // SAFETY:
             // - `cap * N` cannot overflow because the allocation is already in

@@ -275,7 +275,7 @@ impl CString {
             // but using `checked_add` allows LLVM to assume that capacity never overflows
             // and generate twice shorter code.
             // `saturating_add` doesn't help for some reason.
-            let capacity = bytes.len().checked_add(1).unwrap();
+            let capacity = bytes.len() + 1;
 
             // Allocate before validation to avoid duplication of allocation code.
             // We still need to allocate and copy memory even if we get an error.

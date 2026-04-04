@@ -75,6 +75,7 @@ const fn slice_start_index_overflow_fail() -> ! {
 #[cfg_attr(not(feature = "panic_immediate_abort"), inline(never), cold)]
 #[cfg_attr(feature = "panic_immediate_abort", inline)]
 #[track_caller]
+#[allow(dead_code)]
 const fn slice_end_index_overflow_fail() -> ! {
     panic!("attempted to index slice up to maximum usize");
 }

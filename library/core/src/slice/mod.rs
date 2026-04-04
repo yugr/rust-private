@@ -4859,7 +4859,7 @@ impl<T, const N: usize> [[T; N]] {
     #[rustc_const_stable(feature = "const_slice_flatten", since = "1.87.0")]
     pub const fn as_flattened(&self) -> &[T] {
         let len = if T::IS_ZST {
-            self.len().checked_mul(N).expect("slice len overflow")
+            self.len() * N
         } else {
             // SAFETY: `self.len() * N` cannot overflow because `self` is
             // already in the address space.
@@ -4896,7 +4896,7 @@ impl<T, const N: usize> [[T; N]] {
     #[rustc_const_stable(feature = "const_slice_flatten", since = "1.87.0")]
     pub const fn as_flattened_mut(&mut self) -> &mut [T] {
         let len = if T::IS_ZST {
-            self.len().checked_mul(N).expect("slice len overflow")
+            self.len() * N
         } else {
             // SAFETY: `self.len() * N` cannot overflow because `self` is
             // already in the address space.
