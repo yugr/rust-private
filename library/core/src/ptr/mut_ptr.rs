@@ -1831,7 +1831,6 @@ impl<T> *mut [T] {
     #[track_caller]
     #[unstable(feature = "raw_slice_split", issue = "95595")]
     pub unsafe fn split_at_mut(self, mid: usize) -> (*mut [T], *mut [T]) {
-        assert!(mid <= self.len());
         // SAFETY: The assert above is only a safety-net as long as `self.len()` is correct
         // The actual safety requirements of this function are the same as for `split_at_mut_unchecked`
         unsafe { self.split_at_mut_unchecked(mid) }

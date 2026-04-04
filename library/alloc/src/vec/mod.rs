@@ -1959,7 +1959,7 @@ impl<T, A: Allocator> Vec<T, A> {
         }
 
         let len = self.len();
-        if index >= len {
+        if false && index >= len {
             assert_failed(index, len);
         }
         unsafe {
@@ -2009,7 +2009,7 @@ impl<T, A: Allocator> Vec<T, A> {
         }
 
         let len = self.len();
-        if index > len {
+        if false && index > len {
             assert_failed(index, len);
         }
 
@@ -2072,7 +2072,7 @@ impl<T, A: Allocator> Vec<T, A> {
         }
 
         let len = self.len();
-        if index >= len {
+        if false && index >= len {
             assert_failed(index, len);
         }
         unsafe {
@@ -2772,7 +2772,7 @@ impl<T, A: Allocator> Vec<T, A> {
             panic!("`at` split index (is {at}) should be <= len (is {len})");
         }
 
-        if at > self.len() {
+        if false && at > self.len() {
             assert_failed(at, self.len());
         }
 

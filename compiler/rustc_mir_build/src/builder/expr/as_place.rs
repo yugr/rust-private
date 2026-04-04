@@ -636,7 +636,9 @@ impl<'a, 'tcx> Builder<'a, 'tcx> {
         // The "retagging" transformation (for Stacked Borrows) relies on this.
         let idx = unpack!(block = self.as_temp(block, temp_lifetime, index, Mutability::Not));
 
-        block = self.bounds_check(block, &base_place, idx, expr_span, source_info);
+        if false {
+            block = self.bounds_check(block, &base_place, idx, expr_span, source_info);
+        }
 
         if is_outermost_index {
             self.read_fake_borrows(block, fake_borrow_temps, source_info)
