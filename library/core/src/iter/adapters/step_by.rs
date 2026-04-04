@@ -261,36 +261,13 @@ unsafe impl<I: Iterator> StepByImpl<I> for StepBy<I> {
         }
         // n and self.step_minus_one are indices, we need to add 1 to get the amount of elements
         // When calling `.nth`, we need to subtract 1 again to convert back to an index
-        let mut step = self.original_step().get();
+        let step = self.original_step().get();
         // n + 1 could overflow
         // thus, if n is usize::MAX, instead of adding one, we call .nth(step)
-        if n == usize::MAX {
-            self.iter.nth(step - 1);
-        } else {
-            n += 1;
-        }
+        n += 1;
 
-        // overflow handling
-        loop {
-            let mul = Some(n * step);
-            {
-                if intrinsics::likely(mul.is_some()) {
-                    return self.iter.nth(mul.unwrap() - 1);
-                }
-            }
-            let div_n = usize::MAX / n;
-            let div_step = usize::MAX / step;
-            let nth_n = div_n * n;
-            let nth_step = div_step * step;
-            let nth = if nth_n > nth_step {
-                step -= div_n;
-                nth_n
-            } else {
-                n -= div_step;
-                nth_step
-            };
-            self.iter.nth(nth - 1);
-        }
+        let mul = n * step;
+        return self.iter.nth(mul - 1);
     }
 
     default fn spec_try_fold<Acc, F, R>(&mut self, mut acc: Acc, mut f: F) -> R

@@ -796,12 +796,8 @@ fn handle_error(e: TryReserveError) -> ! {
 // an extra guard for this in case we're running on a platform which can use
 // all 4GB in user-space, e.g., PAE or x32.
 #[inline]
-fn alloc_guard(alloc_size: usize) -> Result<(), TryReserveError> {
-    if false && usize::BITS < 64 && alloc_size > isize::MAX as usize {
-        Err(CapacityOverflow.into())
-    } else {
-        Ok(())
-    }
+fn alloc_guard(_: usize) -> Result<(), TryReserveError> {
+    Ok(())
 }
 
 #[inline]

@@ -3565,7 +3565,8 @@ impl<T, A: Allocator> Vec<T, A> {
     #[track_caller]
     fn extend_trusted(&mut self, iterator: impl iter::TrustedLen<Item = T>) {
         let (low, high) = iterator.size_hint();
-        if let Some(additional) = high {
+        let additional = unsafe { high.unwrap_unchecked() };
+        {
             debug_assert_eq!(
                 low,
                 additional,
@@ -3584,13 +3585,6 @@ impl<T, A: Allocator> Vec<T, A> {
                     local_len.increment_len(1);
                 });
             }
-        } else {
-            // Per TrustedLen contract a `None` upper bound means that the iterator length
-            // truly exceeds usize::MAX, which would eventually lead to a capacity overflow anyway.
-            // Since the other branch already panics eagerly (via `reserve()`) we do the same here.
-            // This avoids additional codegen for a fallback code path which would eventually
-            // panic anyway.
-            panic!("capacity overflow");
         }
     }
 
