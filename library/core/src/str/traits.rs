@@ -230,7 +230,6 @@ unsafe impl SliceIndex<str> for ops::Range<usize> {
     }
     #[inline]
     fn index(self, slice: &str) -> &Self::Output {
-        let (start, end) = (self.start, self.end);
         unsafe { &*self.get_unchecked(slice) }
     }
     #[inline]
@@ -318,7 +317,6 @@ unsafe impl SliceIndex<str> for range::Range<usize> {
     }
     #[inline]
     fn index(self, slice: &str) -> &Self::Output {
-        let (start, end) = (self.start, self.end);
         unsafe { &*self.get_unchecked(slice) }
     }
     #[inline]

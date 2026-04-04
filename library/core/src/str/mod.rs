@@ -64,6 +64,7 @@ pub use validations::{next_code_point, utf8_char_width};
 #[track_caller]
 #[rustc_allow_const_fn_unstable(const_eval_select)]
 #[cfg(not(feature = "panic_immediate_abort"))]
+#[allow(dead_code)]
 const fn slice_error_fail(s: &str, begin: usize, end: usize) -> ! {
     crate::intrinsics::const_eval_select((s, begin, end), slice_error_fail_ct, slice_error_fail_rt)
 }
@@ -74,11 +75,13 @@ const fn slice_error_fail(s: &str, begin: usize, end: usize) -> ! {
 }
 
 #[track_caller]
+#[allow(dead_code)]
 const fn slice_error_fail_ct(_: &str, _: usize, _: usize) -> ! {
     panic!("failed to slice string");
 }
 
 #[track_caller]
+#[allow(dead_code)]
 fn slice_error_fail_rt(s: &str, begin: usize, end: usize) -> ! {
     const MAX_DISPLAY_LENGTH: usize = 256;
     let trunc_len = s.floor_char_boundary(MAX_DISPLAY_LENGTH);
